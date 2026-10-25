@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage 6 – Lessons</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand">Stage 6 – Lessons<small id="crumb"></small></div>
+  <div class="pick">
+    <label>Year<select id="selYear"></select></label>
+    <label>Course<select id="selCourse"></select></label>
+    <label>Topic<select id="selTopic"></select></label>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Lessons"></nav>
+  <div class="tools">
+    <button class="btn" id="ansBtn" aria-pressed="false">Show answers</button>
+    <button class="btn solid" id="allBtn">Copy all cards</button>
+  </div>
+</div></header>
+
+<main>
+  <div class="lhead"><h1 id="lname"></h1><p id="lmeta"></p></div>
+  <div id="deck"><p class="status">Loading…</p></div>
+</main>
+
+<div class="shot" id="shot" hidden><div class="shot-in">
+  <p id="shotMsg">Your browser blocked the copy. Right-click the image and choose Copy image, then paste it into OneNote.</p>
+  <img id="shotImg" alt="Card image">
+  <div><button class="btn solid" id="shotClose">Close</button></div>
+</div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<!-- KaTeX 0.16.9 and html-to-image 1.11.11, kept in the repo so the site has no outside dependencies -->
+<script src="assets/vendor/katex.min.js"></script>
+<script src="assets/vendor/auto-render.min.js"></script>
+<script src="assets/vendor/html-to-image.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

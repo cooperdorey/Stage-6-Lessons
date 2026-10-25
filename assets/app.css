@@ -1,0 +1,91 @@
+/* Layout: sticky bar with lesson tabs; lesson below as rows of (left card | right practice cards), one column on narrow screens. */
+:root{
+  --bg:#efeceb; --bar:#fbfaf9; --fg:#231c1b; --muted:#6d6260; --line:#ddd6d4;
+  --accent:#8B1A1A; --accent-ink:#ffffff; --chip:#f3e6e4; --panel:#ffffff;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --card:"Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1c1716; --bar:#251f1e; --fg:#f1eae8; --muted:#b3a6a3; --line:#3d3533;
+  --accent:#e0827a; --accent-ink:#2a0f0d; --chip:#3a2624; --panel:#2a2322; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c1716; --bar:#251f1e; --fg:#f1eae8; --muted:#b3a6a3; --line:#3d3533;
+  --accent:#e0827a; --accent-ink:#2a0f0d; --chip:#3a2624; --panel:#2a2322; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1608px;margin:0 auto;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.brand{font-weight:600;font-size:15px;letter-spacing:.01em;white-space:nowrap}
+.brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.tabs{display:flex;gap:6px;overflow-x:auto;flex:1 1 360px;min-width:0;padding-bottom:2px}
+.tab{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:7px 12px;border-radius:999px;white-space:nowrap;cursor:pointer}
+.tab b{font-variant-numeric:tabular-nums;margin-right:6px;color:var(--muted);font-weight:600}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] b{color:inherit}
+.tools{display:flex;gap:8px}
+.btn{font:inherit;font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.btn.solid{background:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible,.tab:focus-visible,.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{max-width:1608px;margin:0 auto;padding-block:20px 60px;padding-inline:16px}
+.lhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin:0 0 14px}
+.lhead h1{font-family:var(--card);font-size:28px;font-weight:700;margin:0;text-wrap:balance}
+.lhead p{margin:0;color:var(--muted);font-size:13px}
+.answers{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 20px}
+.answers h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.answers ol{margin:0;padding-left:0;list-style:none;columns:2 340px;column-gap:32px;font-size:15px;line-height:1.9}
+.answers li{break-inside:avoid}
+#deck{background:#f4f4f4;padding:24px;border-radius:10px}
+.row{display:grid;grid-template-columns:minmax(0,760px) minmax(0,760px);column-gap:40px;align-items:start;justify-content:center}
+.row>div{min-width:0}
+@media (max-width:1100px){.row{grid-template-columns:minmax(0,760px)}#deck{padding:12px}}
+/* Cards: fixed white, they are pasted into OneNote */
+.c{position:relative;background:#fff;color:#1a1a1a;border:1px solid #d9d9d9;border-radius:12px;overflow:hidden;margin:0 0 2.5rem;font-family:var(--card)}
+.h{background:#8B1A1A;color:#fff;padding:10px 22px;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:"Segoe UI",Arial,sans-serif}
+.h span{color:#F3D9D9;font-size:13px;white-space:nowrap}
+.y12{background:#FFF4E6;color:#8a3c0b;font-size:12px;padding:2px 10px;border-radius:999px;margin-left:12px;font-weight:600}
+.b{padding:30px 34px 34px;font-size:21px;line-height:1.8}
+.rule{background:#EAF2FA;border-left:5px solid #1F4E79;padding:16px 22px;margin:4px 0;color:#0f2f4d}
+.rule.tight{margin-bottom:26px}
+.key{background:#FFF4E6;border-left:5px solid #C65911;padding:14px 22px;margin-top:22px;color:#5a2806}
+.key.solo{text-align:center;font-size:24px;margin:10px 0;padding:22px 26px}
+.g{display:grid;margin-top:22px}
+.g.pad{margin:30px 0 20px 20px}
+.m{text-align:center;font-size:25px;margin:14px 0}
+.cq{text-align:center;font-size:24px;margin-bottom:26px;font-weight:700}
+.pl{font-size:18px}
+.stack{display:grid;gap:30px;text-align:center;font-size:24px;padding-bottom:10px}
+.stack.left{text-align:left;gap:44px}
+.lw{display:grid;grid-template-columns:auto 1fr;gap:14px 30px;font-size:23px;align-items:center;margin:16px 0 8px}
+.lw .ix{color:#4a6a88;font-size:19px}
+.title{text-align:center;padding:40px 0;font-size:40px;color:#8B1A1A;font-weight:700;text-wrap:balance}
+.exh{text-align:center;font-size:30px;font-weight:700;margin:10px 0 24px}
+.exg{display:grid;grid-template-columns:auto auto;gap:12px 22px;justify-content:center}
+.core{color:#2E7D32}.ext{color:#6A1B9A}
+math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif}
+.st{display:grid;gap:8px;margin-top:14px}
+.why{font-size:15px;color:#7a6a68;font-style:italic;margin-left:10px}
+.sol{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:start}
+.fig svg{display:block;max-width:100%;height:auto}
+.subt{text-align:center;font-size:22px;color:#5a2806;margin-top:-24px;padding-bottom:20px}
+#deck.sol-mode{outline:3px solid #C65911;outline-offset:-3px}
+@media (max-width:600px){.sol{grid-template-columns:1fr}}
+.copy{position:absolute;right:10px;bottom:10px;font:12px "Segoe UI",Arial,sans-serif;padding:5px 10px;border:1px solid #d6c7c5;border-radius:6px;background:#fff;color:#8B1A1A;cursor:pointer;opacity:.55}
+.c:hover .copy,.copy:focus-visible{opacity:1}
+@media (max-width:600px){.b{padding:22px 20px 40px;font-size:19px}.title{font-size:30px}.g,.g.pad{grid-template-columns:1fr!important;gap:18px!important;margin-left:0}.lw{grid-template-columns:1fr}.h{font-size:15px;padding:10px 16px;flex-wrap:wrap}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20}
+.shot{position:fixed;inset:0;background:rgba(20,14,13,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:30}
+.shot-in{background:var(--panel);color:var(--fg);border-radius:12px;padding:16px;max-width:min(900px,100%);max-height:100%;overflow:auto;display:grid;gap:12px}
+.shot-in img{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+.shot-in p{margin:0;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* ---- Year / Course / Topic picker ---- */
+.pick{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.pick label{display:flex;flex-direction:column;gap:2px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pick select{font:inherit;font-size:13px;text-transform:none;letter-spacing:0;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:340px;cursor:pointer}
+.pick select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{color:var(--muted);font-size:14px;padding:40px 0;text-align:center}
+
+/* ---- Worked solutions written inside question cards ---- */
+.ws{color:#2E7D32;font-size:21px;line-height:1.9;margin-top:10px}
+#deck:not(.sol-mode) .ws{display:none}
