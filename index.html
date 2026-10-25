@@ -7,24 +7,44 @@
 <link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
-<header class="bar"><div class="bar-in">
-  <div class="brand">Stage 6 – Lessons<small id="crumb"></small></div>
-  <div class="pick">
-    <label>Year<select id="selYear"></select></label>
-    <label>Course<select id="selCourse"></select></label>
-    <label>Topic<select id="selTopic"></select></label>
-  </div>
-  <nav class="tabs" id="tabs" role="tablist" aria-label="Lessons"></nav>
-  <div class="tools">
-    <button class="btn" id="ansBtn" aria-pressed="false">Show answers</button>
-    <button class="btn solid" id="allBtn">Copy all cards</button>
-  </div>
-</div></header>
 
-<main>
-  <div class="lhead"><h1 id="lname"></h1><p id="lmeta"></p></div>
-  <div id="deck"><p class="status">Loading…</p></div>
-</main>
+<!-- Home: Year → Course → Topic, one step per screen -->
+<div id="home" class="home" hidden>
+  <header class="home-top">
+    <a class="wordmark" href="#">Stage 6 – Lessons</a>
+    <nav class="crumbs" id="homeCrumbs" aria-label="Where you are"></nav>
+  </header>
+  <main class="home-main">
+    <h1 class="prompt" id="prompt"></h1>
+    <p class="prompt-sub" id="promptSub"></p>
+    <div class="tiles" id="tiles"></div>
+  </main>
+</div>
+
+<!-- Lesson: topic's lessons down the side, cards on the right -->
+<div id="lesson" class="lesson" hidden>
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a class="side-home" href="#" aria-label="Home">Stage 6 – Lessons</a>
+      <nav class="side-crumbs" id="sideCrumbs" aria-label="Where you are"></nav>
+    </div>
+    <a class="side-topic" id="sideTopic" href="#"></a>
+    <nav class="side-list" id="sideList" aria-label="Lessons in this topic"></nav>
+  </aside>
+  <main class="lesson-main">
+    <div class="lesson-head">
+      <button class="btn side-toggle" id="sideToggle" type="button" aria-controls="side" aria-expanded="false">Lessons</button>
+      <div class="lhead"><h1 id="lname"></h1><p id="lmeta"></p></div>
+      <div class="tools">
+        <button class="btn" id="ansBtn" type="button" aria-pressed="false">Show answers</button>
+        <button class="btn solid" id="allBtn" type="button">Copy all cards</button>
+      </div>
+    </div>
+    <div id="deck"></div>
+  </main>
+</div>
+
+<p class="status" id="status">Loading…</p>
 
 <div class="shot" id="shot" hidden><div class="shot-in">
   <p id="shotMsg">Your browser blocked the copy. Right-click the image and choose Copy image, then paste it into OneNote.</p>

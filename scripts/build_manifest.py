@@ -3,6 +3,7 @@
 
 lessons/<year>/<course>/<NN-topic>/<code>-<slug>.html
 Each folder may hold a _meta.json with {"name": "..."} for its display name.
+Course folders may also set "short" (e.g. "12 ADV"), "colour" (hex) and "order".
 Each lesson file starts with front matter:
     ---
     code: 1.01
@@ -20,12 +21,18 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LESSONS = os.path.join(ROOT, 'lessons')
 problems = []
 
-def meta_name(path, fallback):
+def read_meta(path):
     f = os.path.join(path, '_meta.json')
     if os.path.exists(f):
-        with open(f, encoding='utf-8') as fh:
-            return json.load(fh).get('name', fallback)
-    return fallback
+        try:
+            with open(f, encoding='utf-8') as fh:
+                return json.load(fh)
+        except json.JSONDecodeError as e:
+            problems.append(f'{os.path.relpath(f, ROOT)}: not valid JSON ({e})')
+    return {}
+
+def meta_name(path, fallback):
+    return read_meta(path).get('name', fallback)
 
 def nice(slug):
     slug = re.sub(r'^\d+-', '', slug)
@@ -85,10 +92,14 @@ for y in subdirs(LESSONS):
             if lessons:
                 topics.append({'id': t, 'name': meta_name(tp, nice(t)),
                                'num': str(int(num.group(1))) if num else '', 'lessons': lessons})
-        if topics:
-            courses.append({'id': c, 'name': meta_name(cp, nice(c)), 'topics': topics})
+        m = read_meta(cp)
+        # courses with no lessons yet are kept, so the home page can show them as "coming soon"
+        courses.append({'id': c, 'name': m.get('name', nice(c)), 'short': m.get('short', ''),
+                        'colour': m.get('colour', ''), 'order': m.get('order', 99), 'topics': topics})
+    courses.sort(key=lambda k: (k['order'], k['name']))
     if courses:
-        years.append({'id': y, 'name': meta_name(yp, nice(y)), 'courses': courses})
+        m = read_meta(yp)
+        years.append({'id': y, 'name': m.get('name', nice(y)), 'colour': m.get('colour', ''), 'courses': courses})
 
 with open(os.path.join(ROOT, 'manifest.json'), 'w', encoding='utf-8') as fh:
     json.dump({'years': years}, fh, ensure_ascii=False, indent=1)

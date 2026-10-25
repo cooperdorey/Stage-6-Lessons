@@ -1,44 +1,129 @@
-/* Layout: sticky bar with lesson tabs; lesson below as rows of (left card | right practice cards), one column on narrow screens. */
+/* ================================================================
+   Stage 6 – Lessons
+   Home: one step per screen (Year → Course → Topic), courses shown as
+   coloured notebooks. Lesson: the topic's lessons down the side, like a
+   OneNote section, cards on the right.
+   Course colours come from each course's _meta.json (--course).
+   ================================================================ */
 :root{
-  --bg:#efeceb; --bar:#fbfaf9; --fg:#231c1b; --muted:#6d6260; --line:#ddd6d4;
-  --accent:#8B1A1A; --accent-ink:#ffffff; --chip:#f3e6e4; --panel:#ffffff;
+  --paper:#F2F3F5; --sheet:#FFFFFF; --ink:#1D232B; --muted:#5E6672; --line:#D9DDE3;
+  --brand:#8B1A1A; --brand-ink:#FFFFFF;
+  --course:#5E6672; --course-ink:#FFFFFF; --course-tint:#E9EBEF;
   --ui:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --card:"Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
+  /* names kept for the card styles below */
+  --bg:var(--paper); --fg:var(--ink); --panel:var(--sheet); --accent:var(--brand); --accent-ink:var(--brand-ink);
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#1c1716; --bar:#251f1e; --fg:#f1eae8; --muted:#b3a6a3; --line:#3d3533;
-  --accent:#e0827a; --accent-ink:#2a0f0d; --chip:#3a2624; --panel:#2a2322; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#1c1716; --bar:#251f1e; --fg:#f1eae8; --muted:#b3a6a3; --line:#3d3533;
-  --accent:#e0827a; --accent-ink:#2a0f0d; --chip:#3a2624; --panel:#2a2322; color-scheme:dark}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#16191E; --sheet:#20242B; --ink:#ECEEF1; --muted:#A5ACB7; --line:#343A43;
+  --brand:#E0827A; --brand-ink:#2A0F0D; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--ui)}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);border-bottom:1px solid var(--line)}
-.bar-in{max-width:1608px;margin:0 auto;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
-.brand{font-weight:600;font-size:15px;letter-spacing:.01em;white-space:nowrap}
-.brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
-.tabs{display:flex;gap:6px;overflow-x:auto;flex:1 1 360px;min-width:0;padding-bottom:2px}
-.tab{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:7px 12px;border-radius:999px;white-space:nowrap;cursor:pointer}
-.tab b{font-variant-numeric:tabular-nums;margin-right:6px;color:var(--muted);font-weight:600}
-.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.tab[aria-selected="true"] b{color:inherit}
-.tools{display:flex;gap:8px}
-.btn{font:inherit;font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
-.btn.solid{background:var(--accent);color:var(--accent-ink)}
-.btn:focus-visible,.tab:focus-visible,.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{max-width:1608px;margin:0 auto;padding-block:20px 60px;padding-inline:16px}
-.lhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin:0 0 14px}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.status{color:var(--muted);font-size:15px;padding:80px 16px;text-align:center;margin:0}
+
+/* ---------- buttons ---------- */
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid var(--brand);background:transparent;color:var(--brand);cursor:pointer}
+.btn.solid{background:var(--brand);color:var(--brand-ink)}
+
+/* ---------- home ---------- */
+.home{min-height:100vh;display:flex;flex-direction:column}
+.home-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;padding:22px clamp(16px,5vw,64px) 0}
+.wordmark{font-family:var(--card);font-weight:700;font-size:19px;color:var(--brand);text-decoration:none}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 0;font-size:14px;color:var(--muted)}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.crumbs span+span::before,.crumbs a+span::before,.crumbs a+a::before,.crumbs span+a::before{content:"›";margin:0 8px;color:var(--line)}
+.home-main{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:clamp(40px,9vh,96px) clamp(16px,5vw,64px) 64px}
+.prompt{font-family:var(--card);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:1.05;margin:0;letter-spacing:-.01em}
+.prompt-sub{margin:12px 0 0;color:var(--muted);font-size:16px;max-width:60ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;margin-top:44px}
+
+/* Year: a stack of notebook spines, one per course in that year */
+.year{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:230px;padding:24px 24px 22px 24px;
+  background:var(--sheet);border:1px solid var(--line);border-radius:6px 14px 14px 6px;text-decoration:none;color:var(--ink);overflow:hidden}
+.year .spines{position:absolute;inset:0 auto 0 0;display:flex}
+.year .spines i{width:14px;height:100%;background:var(--c)}
+.year .spines i+i{box-shadow:inset 1px 0 0 rgba(255,255,255,.35)}
+.year .word{font-family:var(--card);font-size:22px;color:var(--muted);line-height:1}
+.year .big{font-family:var(--card);font-weight:700;font-size:72px;line-height:1;margin:2px 0 12px}
+.year .small{color:var(--muted);font-size:14px}
+.year.has-spines{padding-left:calc(24px + var(--n) * 14px)}
+.year:hover{border-color:var(--ink)}
+
+/* Course: a coloured notebook cover */
+.course{position:relative;display:flex;flex-direction:column;min-height:250px;padding:22px 22px 20px 40px;border-radius:5px 14px 14px 5px;
+  background:var(--course);color:var(--course-ink);text-decoration:none;overflow:hidden;border:0}
+.course::before{content:"";position:absolute;inset:0 auto 0 0;width:22px;background:rgba(0,0,0,.18)}
+.course::after{content:"";position:absolute;top:0;bottom:0;left:22px;width:1px;background:rgba(255,255,255,.25)}
+.course .short{font-family:var(--card);font-weight:700;font-size:44px;line-height:1}
+.course .name{font-size:16px;margin-top:8px;opacity:.92}
+.course .count{margin-top:auto;font-size:14px;opacity:.85}
+.course:hover{filter:brightness(1.06)}
+.course.empty{cursor:default;opacity:.55}
+.course.empty:hover{filter:none}
+.course.empty .count{font-style:italic}
+
+/* Topic: a section tab in the course colour */
+.topics{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:26px 22px}
+.topic{position:relative;display:flex;gap:16px;align-items:flex-start;padding:18px 20px 18px 18px;margin-top:14px;min-height:118px;
+  background:var(--sheet);border:1px solid var(--line);border-top:5px solid var(--course);border-radius:0 10px 10px 10px;text-decoration:none;color:var(--ink)}
+.topic::before{content:"";position:absolute;top:-19px;left:-1px;width:92px;height:14px;background:var(--course);border-radius:8px 8px 0 0}
+.topic .num{font-family:var(--card);font-weight:700;font-size:36px;line-height:1;color:var(--course);min-width:1.4em}
+.topic .t{font-family:var(--card);font-size:20px;font-weight:700;line-height:1.25}
+.topic .count{display:block;margin-top:6px;color:var(--muted);font-size:14px;font-family:var(--ui);font-weight:400}
+.topic:hover{background:var(--course-tint)}
+.course-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.course-chip{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--course);color:var(--course-ink);font-size:13px;font-weight:600}
+.empty-note{margin-top:40px;color:var(--muted)}
+
+/* ---------- lesson view ---------- */
+.lesson{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+.lesson.collapsed{grid-template-columns:0 minmax(0,1fr)}
+.lesson.collapsed .side{visibility:hidden}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--course-tint);border-right:1px solid var(--line);
+  display:flex;flex-direction:column}
+.side-top{padding:18px 18px 10px}
+.side-home{font-family:var(--card);font-weight:700;font-size:16px;color:var(--brand);text-decoration:none}
+.side-crumbs{margin-top:6px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap}
+.side-crumbs a{color:var(--muted);text-decoration:none}
+.side-crumbs a:hover{color:var(--ink);text-decoration:underline}
+.side-crumbs a+a::before{content:"›";margin:0 6px;color:var(--line)}
+.side-topic{display:block;margin:6px 12px 8px;padding:12px 14px;border-radius:8px;background:var(--course);color:var(--course-ink);
+  text-decoration:none;font-family:var(--card);font-weight:700;font-size:17px;line-height:1.3}
+.side-topic small{display:block;font-family:var(--ui);font-weight:400;font-size:12.5px;opacity:.85;margin-top:2px}
+.side-list{display:flex;flex-direction:column;padding:4px 0 24px}
+.page{display:grid;grid-template-columns:3.2em 1fr;gap:6px;padding:9px 16px 9px 14px;border:0;border-left:4px solid transparent;
+  background:transparent;color:var(--ink);font:inherit;font-size:14.5px;line-height:1.35;text-align:left;cursor:pointer;text-decoration:none}
+.page b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
+.page:hover{background:rgba(0,0,0,.04)}
+.page[aria-current="page"]{background:var(--sheet);border-left-color:var(--course);font-weight:600}
+.page[aria-current="page"] b{color:var(--course)}
+.lesson-main{min-width:0;padding:20px clamp(12px,2vw,28px) 60px}
+.lesson-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin:0 0 16px}
+.lesson-head .lhead{flex:1;min-width:260px;margin:0}
+.lhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
 .lhead h1{font-family:var(--card);font-size:28px;font-weight:700;margin:0;text-wrap:balance}
 .lhead p{margin:0;color:var(--muted);font-size:13px}
-.answers{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 20px}
-.answers h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
-.answers ol{margin:0;padding-left:0;list-style:none;columns:2 340px;column-gap:32px;font-size:15px;line-height:1.9}
-.answers li{break-inside:avoid}
+.side-toggle{border-color:var(--line);color:var(--ink)}
+@media (max-width:900px){
+  .lesson,.lesson.collapsed{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;z-index:20;inset:0 auto 0 0;width:min(320px,88vw);transform:translateX(-102%);transition:transform .2s ease;box-shadow:0 0 40px rgba(0,0,0,.25);visibility:visible!important}
+  .lesson.open .side{transform:none}
+}
+@media (prefers-reduced-motion:reduce){.side{transition:none}}
+@media (max-width:600px){.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
+
+/* ---------- cards (unchanged from the Year 11 app) ---------- */
+#deck{container-type:inline-size}
 #deck{background:#f4f4f4;padding:24px;border-radius:10px}
 .row{display:grid;grid-template-columns:minmax(0,760px) minmax(0,760px);column-gap:40px;align-items:start;justify-content:center}
 .row>div{min-width:0}
-@media (max-width:1100px){.row{grid-template-columns:minmax(0,760px)}#deck{padding:12px}}
+@media (max-width:1100px){#deck{padding:12px}}
 /* Cards: fixed white, they are pasted into OneNote */
 .c{position:relative;background:#fff;color:#1a1a1a;border:1px solid #d9d9d9;border-radius:12px;overflow:hidden;margin:0 0 2.5rem;font-family:var(--card)}
 .h{background:#8B1A1A;color:#fff;padding:10px 22px;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:"Segoe UI",Arial,sans-serif}
@@ -78,14 +163,14 @@ math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif}
 .shot-in{background:var(--panel);color:var(--fg);border-radius:12px;padding:16px;max-width:min(900px,100%);max-height:100%;overflow:auto;display:grid;gap:12px}
 .shot-in img{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
 .shot-in p{margin:0;font-size:14px;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-/* ---- Year / Course / Topic picker ---- */
-.pick{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
-.pick label{display:flex;flex-direction:column;gap:2px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.pick select{font:inherit;font-size:13px;text-transform:none;letter-spacing:0;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:340px;cursor:pointer}
-.pick select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.status{color:var(--muted);font-size:14px;padding:40px 0;text-align:center}
+@container (max-width:1180px){.row{grid-template-columns:minmax(0,760px)}}
 
 /* ---- Worked solutions written inside question cards ---- */
 .ws{color:#2E7D32;font-size:21px;line-height:1.9;margin-top:10px}
 #deck:not(.sol-mode) .ws{display:none}
+
+/* dark mode: dark course colours are kept for fills, not for text */
+@media (prefers-color-scheme: dark){
+  .topic .num,.page[aria-current="page"] b{color:var(--ink)}
+  .topic::before,.topic{border-top-color:var(--course)}
+}

@@ -16,6 +16,17 @@ lessons/
         1.01-the-derivative-of-exponential-functions.html
 ```
 
+The home page steps through Year → Course → Topic, and a topic opens with its lessons
+down the side. All of it comes from the folders.
+
+Course folders also set their short name, colour and order in `_meta.json`:
+
+```json
+{"name": "Mathematics Advanced", "short": "12 ADV", "colour": "#1F3A68", "order": 3}
+```
+
+A course folder with no lessons yet shows on the home page as "Coming soon".
+
 The menus come from the folders. A new year, course or topic is just a new folder
 (with a `_meta.json` for its display name). The number at the front of a topic folder
 sets its order and is shown in the menu ("1 · Differential calculus").

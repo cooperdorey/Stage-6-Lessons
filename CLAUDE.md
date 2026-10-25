@@ -10,5 +10,7 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
 - Worked solutions go inline as `<div class="ws">…</div>` under each question, including
   on model cards. The app hides them in lesson view.
 - No exercise card. Labels with "We Do" / "your turn" go right; nothing else may use those words.
-- New topic or course: create the folder and a `_meta.json` with `{"name": "…"}`.
+- New topic: create the folder and a `_meta.json` with `{"name": "…"}`.
+- Course `_meta.json` also has `short`, `colour` and `order` (colours chosen by Coop:
+  11 ADV blue, 11 STD light green, 12 STD 1 light teal, 12 STD 2 dark purple, 12 ADV navy).
 - Before committing, run `python3 scripts/build_manifest.py`; it must report no problems.
