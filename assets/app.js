@@ -187,18 +187,33 @@ async function openLesson(L){
   const list = showSol && data.solutions ? data.solutions : data.cards;
   deck.classList.toggle('sol-mode', showSol);
   $('lmeta').textContent = showSol ? `Worked solutions · ${plural(list.length,'card')}` : `${plural(data.cards.length,'card')} · practice cards sit in the right column`;
-  deck.replaceChildren(); let r = null;
+  const sheet = document.createElement('div'); sheet.className = 'sheet'; sheet.id = 'sheet';
+  deck.replaceChildren(sheet); let r = null;
   list.forEach(card=>{
     const el = withCopy(card), right = isRight(labelOf(card));
     if (!right || !r){
       const row=document.createElement('div');row.className='row';
-      const l=document.createElement('div'); r=document.createElement('div'); row.append(l,r); deck.append(row);
+      const l=document.createElement('div'); r=document.createElement('div'); row.append(l,r); sheet.append(row);
       if (!right){ l.append(el); return }
     }
     r.append(el);
   });
   math(deck);
+  fit();
 }
+
+// Keep the two-column layout at the cards' real size and scale the whole sheet to the space
+// available. Only very narrow screens (phones) drop to one column.
+function fit(){
+  const deck = $('deck'), sheet = $('sheet'); if (!sheet) return;
+  const cs = getComputedStyle(deck);
+  const avail = deck.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const one = avail < 700;
+  sheet.classList.toggle('one', one);
+  const z = Math.min(1, avail / (one ? 760 : 1560));
+  sheet.style.zoom = z < 1 ? z.toFixed(4) : '';
+}
+new ResizeObserver(()=>fit()).observe($('deck'));
 
 // ---------- copy to clipboard as an image ----------
 const opts = {pixelRatio:2, backgroundColor:'#f4f4f4', filter:n=>!(n.classList&&n.classList.contains('copy'))};
@@ -206,15 +221,21 @@ async function showShot(node){
   try{const url=await htmlToImage.toPng(node,opts);$('shotImg').src=url;$('shot').hidden=false}
   catch(e){toast('Could not make the image. Try again.')}
 }
-function copyNode(node,msg){
-  if (typeof htmlToImage==='undefined'){toast('Image tools are still loading. Try again in a moment.');return}
-  if (!navigator.clipboard || typeof ClipboardItem==='undefined'){showShot(node);return}
+function copyNode(node,msg,done){
+  done = done || (()=>{});
+  if (typeof htmlToImage==='undefined'){toast('Image tools are still loading. Try again in a moment.');done();return}
+  if (!navigator.clipboard || typeof ClipboardItem==='undefined'){showShot(node).finally(done);return}
   const blob = htmlToImage.toBlob(node,opts);
+  blob.finally(done);
   navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(()=>toast(msg+'. Paste it into OneNote.')).catch(()=>showShot(node));
 }
 
 // ---------- wiring ----------
-$('allBtn').addEventListener('click',()=>copyNode($('deck'),'All cards copied'));
+$('allBtn').addEventListener('click',()=>{
+  const sheet=$('sheet'); if(!sheet) return;
+  const z=sheet.style.zoom; sheet.style.zoom='';           // copy at full size
+  copyNode(sheet,'All cards copied', ()=>{ sheet.style.zoom=z });
+});
 $('ansBtn').addEventListener('click',e=>{
   showSol=!showSol; const b=e.currentTarget;
   b.setAttribute('aria-pressed',showSol); b.textContent=showSol?'Show lesson':'Show answers'; b.classList.toggle('solid',showSol);

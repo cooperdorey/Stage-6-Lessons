@@ -119,9 +119,12 @@ a{color:inherit}
 @media (max-width:600px){.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
 
 /* ---------- cards (unchanged from the Year 11 app) ---------- */
-#deck{container-type:inline-size}
+/* The deck is laid out at the cards' true size (two 760px columns) and scaled to fit. */
 #deck{background:#f4f4f4;padding:24px;border-radius:10px}
-.row{display:grid;grid-template-columns:minmax(0,760px) minmax(0,760px);column-gap:40px;align-items:start;justify-content:center}
+.sheet{width:1560px;transform-origin:0 0}
+.sheet.one{width:760px}
+.row{display:grid;grid-template-columns:760px 760px;column-gap:40px;align-items:start}
+.sheet.one .row{grid-template-columns:760px}
 .row>div{min-width:0}
 @media (max-width:1100px){#deck{padding:12px}}
 /* Cards: fixed white, they are pasted into OneNote */
@@ -154,16 +157,13 @@ math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif}
 .fig svg{display:block;max-width:100%;height:auto}
 .subt{text-align:center;font-size:22px;color:#5a2806;margin-top:-24px;padding-bottom:20px}
 #deck.sol-mode{outline:3px solid #C65911;outline-offset:-3px}
-@media (max-width:600px){.sol{grid-template-columns:1fr}}
 .copy{position:absolute;right:10px;bottom:10px;font:12px "Segoe UI",Arial,sans-serif;padding:5px 10px;border:1px solid #d6c7c5;border-radius:6px;background:#fff;color:var(--card-title,#8B1A1A);cursor:pointer;opacity:.55}
 .c:hover .copy,.copy:focus-visible{opacity:1}
-@media (max-width:600px){.b{padding:22px 20px 40px;font-size:19px}.title{font-size:30px}.g,.g.pad{grid-template-columns:1fr!important;gap:18px!important;margin-left:0}.lw{grid-template-columns:1fr}.h{font-size:15px;padding:10px 16px;flex-wrap:wrap}}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20}
 .shot{position:fixed;inset:0;background:rgba(20,14,13,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:30}
 .shot-in{background:var(--panel);color:var(--fg);border-radius:12px;padding:16px;max-width:min(900px,100%);max-height:100%;overflow:auto;display:grid;gap:12px}
 .shot-in img{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
 .shot-in p{margin:0;font-size:14px;color:var(--muted)}
-@container (max-width:1180px){.row{grid-template-columns:minmax(0,760px)}}
 
 /* ---- Worked solutions written inside question cards ---- */
 .ws{color:#2E7D32;font-size:21px;line-height:1.9;margin-top:10px}
