@@ -126,8 +126,8 @@ a{color:inherit}
 @media (max-width:1100px){#deck{padding:12px}}
 /* Cards: fixed white, they are pasted into OneNote */
 .c{position:relative;background:#fff;color:#1a1a1a;border:1px solid #d9d9d9;border-radius:12px;overflow:hidden;margin:0 0 2.5rem;font-family:var(--card)}
-.h{background:#8B1A1A;color:#fff;padding:10px 22px;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:"Segoe UI",Arial,sans-serif}
-.h span{color:#F3D9D9;font-size:13px;white-space:nowrap}
+.h{background:var(--card-head,#8B1A1A);color:var(--card-ink,#fff);padding:10px 22px;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:"Segoe UI",Arial,sans-serif}
+.h span{color:var(--card-sub,#F3D9D9);font-size:13px;white-space:nowrap}
 .y12{background:#FFF4E6;color:#8a3c0b;font-size:12px;padding:2px 10px;border-radius:999px;margin-left:12px;font-weight:600}
 .b{padding:30px 34px 34px;font-size:21px;line-height:1.8}
 .rule{background:#EAF2FA;border-left:5px solid #1F4E79;padding:16px 22px;margin:4px 0;color:#0f2f4d}
@@ -143,7 +143,7 @@ a{color:inherit}
 .stack.left{text-align:left;gap:44px}
 .lw{display:grid;grid-template-columns:auto 1fr;gap:14px 30px;font-size:23px;align-items:center;margin:16px 0 8px}
 .lw .ix{color:#4a6a88;font-size:19px}
-.title{text-align:center;padding:40px 0;font-size:40px;color:#8B1A1A;font-weight:700;text-wrap:balance}
+.title{text-align:center;padding:40px 0;font-size:40px;color:var(--card-title,#8B1A1A);font-weight:700;text-wrap:balance}
 .exh{text-align:center;font-size:30px;font-weight:700;margin:10px 0 24px}
 .exg{display:grid;grid-template-columns:auto auto;gap:12px 22px;justify-content:center}
 .core{color:#2E7D32}.ext{color:#6A1B9A}
@@ -155,7 +155,7 @@ math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif}
 .subt{text-align:center;font-size:22px;color:#5a2806;margin-top:-24px;padding-bottom:20px}
 #deck.sol-mode{outline:3px solid #C65911;outline-offset:-3px}
 @media (max-width:600px){.sol{grid-template-columns:1fr}}
-.copy{position:absolute;right:10px;bottom:10px;font:12px "Segoe UI",Arial,sans-serif;padding:5px 10px;border:1px solid #d6c7c5;border-radius:6px;background:#fff;color:#8B1A1A;cursor:pointer;opacity:.55}
+.copy{position:absolute;right:10px;bottom:10px;font:12px "Segoe UI",Arial,sans-serif;padding:5px 10px;border:1px solid #d6c7c5;border-radius:6px;background:#fff;color:var(--card-title,#8B1A1A);cursor:pointer;opacity:.55}
 .c:hover .copy,.copy:focus-visible{opacity:1}
 @media (max-width:600px){.b{padding:22px 20px 40px;font-size:19px}.title{font-size:30px}.g,.g.pad{grid-template-columns:1fr!important;gap:18px!important;margin-left:0}.lw{grid-template-columns:1fr}.h{font-size:15px;padding:10px 16px;flex-wrap:wrap}}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20}

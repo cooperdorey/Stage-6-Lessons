@@ -30,11 +30,22 @@ function inkFor(hex){const c=rgb(hex);if(!c)return '#FFFFFF';
 function tint(hex,amt){const c=rgb(hex);if(!c)return '';
   const dark=matchMedia('(prefers-color-scheme: dark)').matches, base=dark?[32,36,43]:[255,255,255];
   return '#'+c.map((v,i)=>Math.round(base[i]+(v-base[i])*amt).toString(16).padStart(2,'0')).join('')}
+function lum(c){const L=c.map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*L[0]+.7152*L[1]+.0722*L[2]}
+// the course colour, darkened just enough to read as text on a white card
+function deep(hex){let c=rgb(hex);if(!c)return '#8B1A1A';
+  for(let i=0;i<20 && 1.05/(lum(c)+.05)<4.5;i++) c=c.map(v=>Math.round(v*.9));
+  return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}
 function paint(el, course){
   const col = course && course.colour || '#5E6672';
   el.style.setProperty('--course', col);
   el.style.setProperty('--course-ink', inkFor(col));
   el.style.setProperty('--course-tint', tint(col,.12));
+  // lesson cards take the course colour (they stay white, for OneNote)
+  const ink = inkFor(col);
+  el.style.setProperty('--card-head', col);
+  el.style.setProperty('--card-ink', ink);
+  el.style.setProperty('--card-sub', ink==='#FFFFFF' ? 'rgba(255,255,255,.78)' : 'rgba(19,32,43,.72)');
+  el.style.setProperty('--card-title', deep(col));
 }
 
 // ---------- manifest ----------
