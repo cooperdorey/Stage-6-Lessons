@@ -50,7 +50,7 @@ function paint(el, course){
 
 // ---------- manifest ----------
 async function loadManifest(){
-  const r = await fetch('manifest.json',{cache:'no-cache'});
+  const r = await fetch('manifest.json',{cache:'no-store'});
   if (!r.ok) throw new Error('manifest');
   M = await r.json(); LIST = [];
   M.years.forEach(y=>y.courses.forEach(c=>c.topics.forEach(t=>{
@@ -155,7 +155,7 @@ function buildSide(L){
 }
 async function fetchLesson(L){
   if (cache.has(L.id)) return cache.get(L.id);
-  const r = await fetch(L.path,{cache:'no-cache'});
+  const r = await fetch(L.path,{cache:'no-store'});
   if (!r.ok) throw new Error('This lesson could not be loaded (' + L.path + ').');
   let text = await r.text();
   text = text.replace(/^﻿?---[\s\S]*?\n---\s*\n/, '');
