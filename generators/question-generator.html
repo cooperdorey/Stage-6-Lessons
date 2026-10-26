@@ -257,13 +257,6 @@ function gSigned(R){const k=R.pick([1,-1]),p=R.int(-3,1),q=p+R.int(1,3),t=q+R.in
    `(Integrating straight from $${p}$ to $${t}$ gives $${I1.v.add(I2.v).tex()}$, which is wrong because the regions cancel.)`],
   ans:`$${A.tex()}$ units$^2$`}}
 
-function gBetween(R){const b=R.int(-4,4),c=R.int(-5,5),p=R.int(-3,2),q=p+R.int(1,4);
- const par=[c,b,1],m=b+p+q,d=c-p*q,L=lin(m,d),diff=[-p*q,p+q,-1];const D=defIntSteps(diff,p,q);
- return{q:`Find the area enclosed between the parabola $y = ${pTex(par)}$ and the line $y = ${L}$.`,
-  sol:[`Find the intersection points: $${pTex(par)} = ${L}$`,`$$${pTex([p*q,-(p+q),1])} = 0 \\;\\Rightarrow\\; ${factored(1,p,q)} = 0$$`,
-   `so $x = ${p}$ or $x = ${q}$. The line is above the parabola between these points, so integrate (line − parabola):`,
-   ...D.lines,`Area $= ${D.v.tex()}$ square units.`],ans:`$${D.v.tex()}$ units$^2$`}}
-
 function gTrap(R){const n=R.pick([4,4,3,5,6]);
  if(R.next()<0.5){const cs=[R.int(-3,5),R.int(-4,4),R.nz(-2,2)],h=R.pick([F(1),F(1,2),F(2)]),a=F(R.int(0,2)),b=a.add(h.mul(n));
   const xs=[...Array(n+1)].map((_,i)=>a.add(h.mul(i))),ys=xs.map(x=>pEval(cs,x));
@@ -306,7 +299,6 @@ const TOPICS=[
   {id:'ic-trig',name:'Integrating trig functions',gen:gTrig},
   {id:'ic-area',name:'Area between curve and x-axis',gen:gArea},
   {id:'ic-signed',name:'Area: curve crosses the x-axis',gen:gSigned},
-  {id:'ic-between',name:'Area between two curves',gen:gBetween},
   {id:'ic-trap',name:'Trapezoidal rule',gen:gTrap}]},
  {id:'11adv-calculus',name:'Differential calculus (review)',course:'Year 11 Advanced',lessons:[
   {id:'dc-index',name:'Differentiating with indices',gen:gDiffIdx},
