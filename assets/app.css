@@ -1,5 +1,5 @@
 /* ================================================================
-   Stage 6 – Lessons
+   Dorey Desk
    Home: one step per screen (Year → Course → Topic), courses shown as
    coloured notebooks. Lesson: the topic's lessons down the side, like a
    OneNote section, cards on the right.
@@ -7,7 +7,7 @@
    ================================================================ */
 :root{
   --paper:#F2F3F5; --sheet:#FFFFFF; --ink:#1D232B; --muted:#5E6672; --line:#D9DDE3;
-  --brand:#8B1A1A; --brand-ink:#FFFFFF;
+  --brand:#0F766E; --brand-ink:#FFFFFF;
   --course:#5E6672; --course-ink:#FFFFFF; --course-tint:#E9EBEF;
   --ui:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --card:"Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
@@ -16,7 +16,7 @@
 }
 @media (prefers-color-scheme: dark){:root{
   --paper:#16191E; --sheet:#20242B; --ink:#ECEEF1; --muted:#A5ACB7; --line:#343A43;
-  --brand:#E0827A; --brand-ink:#2A0F0D; color-scheme:dark}}
+  --brand:#5FCFC2; --brand-ink:#062A26; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}

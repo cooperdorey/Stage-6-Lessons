@@ -1,16 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Stage 6 – Lessons: a maroon notebook, "S6", with a band of the five course colours -->
-  <defs><clipPath id="r"><rect width="64" height="64" rx="12"/></clipPath></defs>
+  <!-- Dorey Desk: a serif "D" on a desk whose top is the five course colours -->
+  <defs><clipPath id="r"><rect width="64" height="64" rx="13"/></clipPath></defs>
   <g clip-path="url(#r)">
-    <rect width="64" height="64" fill="#8B1A1A"/>
-    <rect x="0" y="0" width="9" height="64" fill="#6E1414"/>
+    <rect width="64" height="64" fill="#0F766E"/>
+    <text x="32" y="38" text-anchor="middle" font-family="Palatino Linotype, Palatino, Book Antiqua, Georgia, serif" font-weight="700" font-size="34" fill="#FFFFFF">D</text>
     <g>
-      <rect x="0"  y="52" width="13" height="12" fill="#2F72C4"/>
-      <rect x="13" y="52" width="13" height="12" fill="#7CC47A"/>
-      <rect x="26" y="52" width="13" height="12" fill="#5CC2BC"/>
-      <rect x="39" y="52" width="13" height="12" fill="#5A2A82"/>
-      <rect x="52" y="52" width="12" height="12" fill="#1F3A68"/>
+      <rect x="7"    y="42" width="10" height="6" fill="#2F72C4"/>
+      <rect x="17"   y="42" width="10" height="6" fill="#7CC47A"/>
+      <rect x="27"   y="42" width="10" height="6" fill="#5CC2BC"/>
+      <rect x="37"   y="42" width="10" height="6" fill="#5A2A82"/>
+      <rect x="47"   y="42" width="10" height="6" fill="#1F3A68"/>
     </g>
-    <text x="36.5" y="40" text-anchor="middle" font-family="Palatino Linotype, Palatino, Book Antiqua, Georgia, serif" font-weight="700" font-size="33" fill="#FFFFFF">S6</text>
+    <rect x="10" y="48" width="4.5" height="10" fill="#FFFFFF"/>
+    <rect x="49.5" y="48" width="4.5" height="10" fill="#FFFFFF"/>
   </g>
 </svg>

@@ -1,6 +1,7 @@
-# Stage 6 – Lessons
+# Dorey Desk
 
-Teaching cards for NSW Stage 6 Mathematics, organised Year → Course → Topic → Lesson.
+Teaching cards and question generators for NSW Stage 6 Mathematics. Lessons are organised
+Year → Course → Topic → Lesson.
 Open a lesson, copy cards as images into OneNote, and toggle the worked solutions.
 
 ## How it fits together

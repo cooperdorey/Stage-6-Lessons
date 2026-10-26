@@ -1,4 +1,4 @@
-// Stage 6 – Lessons
+// Dorey Desk
 // Reads manifest.json (built from the lessons/ folder tree).
 // Addresses:  #                      → start: Lessons or Generators
 //             #generators            → list of generators (generators/generators.json)
@@ -125,7 +125,7 @@ async function showStart(){
   gens.innerHTML = `<span class="dice" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
     <span class="big">Generators</span><span class="small" id="genCount">Random questions with worked solutions</span>`;
   tiles.replaceChildren(lessons, gens);
-  document.title = 'Stage 6 – Lessons';
+  document.title = 'Dorey Desk';
   const g = await loadGenerators();
   const c = $('genCount'); if (c && g.length) c.textContent = `Random questions with worked solutions · ${plural(g.length,'generator')}`;
 }
@@ -136,7 +136,7 @@ async function showGenerators(){
   $('prompt').textContent = 'Choose a generator';
   $('promptSub').textContent = 'Each opens in its own page. Questions come with worked solutions.';
   const tiles = $('tiles'); tiles.className = 'tiles gens'; tiles.replaceChildren();
-  document.title = 'Generators – Stage 6 – Lessons';
+  document.title = 'Generators – Dorey Desk';
   const g = await loadGenerators();
   if (!g.length){ tiles.innerHTML = '<p class="empty-note">No generators yet.</p>'; return }
   const colourOf = s => { for (const y of M.years) for (const c of y.courses) if (c.short===s) return c.colour; return '' };
@@ -163,7 +163,7 @@ function showYears(){
       <span class="small">${plural(y.courses.length,'course')}, ${plural(n,'lesson')}</span>`;
     return a;
   }));
-  document.title = 'Lessons – Stage 6 – Lessons';
+  document.title = 'Lessons – Dorey Desk';
 }
 
 // ---------- home: course ----------
@@ -181,7 +181,7 @@ function showCourses(y){
       <span class="count">${empty ? 'Coming soon' : plural(c.topics.length,'topic') + ', ' + plural(n,'lesson')}</span>`;
     return a;
   }));
-  document.title = `${y.name} – Stage 6 – Lessons`;
+  document.title = `${y.name} – Dorey Desk`;
 }
 
 // ---------- home: topic ----------
@@ -196,7 +196,7 @@ function showTopics(y, c){
     a.innerHTML = `<span class="num">${esc(t.num||'')}</span><span class="t">${esc(t.name)}<span class="count">${plural(t.lessons.length,'lesson')}</span></span>`;
     return a;
   }));
-  document.title = `${c.short||c.name} – Stage 6 – Lessons`;
+  document.title = `${c.short||c.name} – Dorey Desk`;
 }
 
 // ---------- lesson view ----------
@@ -240,7 +240,7 @@ async function openLesson(L){
   $('home').hidden = true; $('status').hidden = true; $('lesson').hidden = false;
   buildSide(L); remember(L);
   $('lname').textContent = `${L.code} – ${L.title}`; math($('lname'));
-  document.title = `${L.code} ${L.title.replace(/\$/g,'')} – Stage 6 – Lessons`;
+  document.title = `${L.code} ${L.title.replace(/\$/g,'')} – Dorey Desk`;
   const deck = $('deck');
   deck.replaceChildren(Object.assign(document.createElement('p'),{className:'status',textContent:'Loading…'}));
   let data;

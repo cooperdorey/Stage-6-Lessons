@@ -1,6 +1,6 @@
 # Notes for Claude
 
-This repo is the Stage 6 – Lessons site (cards for OneNote). Lesson content rules (atomisation, card order,
+This repo is the Dorey Desk site (cards for OneNote). Lesson content rules (atomisation, card order,
 We Do levels) live in the Lesson Creator project; this file covers the repo format.
 
 - One file per lesson: `lessons/<year>/<course>/<NN-topic>/<code>-<slug>.html`.
