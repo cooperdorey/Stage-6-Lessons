@@ -2,6 +2,8 @@
 
 Teaching cards and question generators for NSW Stage 6 Mathematics. Lessons are organised
 Year → Course → Topic → Lesson.
+
+Live site: https://cooperdorey.github.io/dorey-desk/ (the repo was called Stage-6-Lessons until October 2026).
 Open a lesson, copy cards as images into OneNote, and toggle the worked solutions.
 
 ## How it fits together
