@@ -13,4 +13,6 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
 - New topic: create the folder and a `_meta.json` with `{"name": "…"}`.
 - Course `_meta.json` also has `short`, `colour` and `order` (colours chosen by Coop:
   11 ADV blue, 11 STD light green, 12 STD 1 light teal, 12 STD 2 dark purple, 12 ADV navy).
+- Brackets: use plain `( )`; use `\left( … \right)` only around fractions. Don't use `\big`.
+  (The app draws non-fraction `\left…\right` pairs at normal size so pairs always match.)
 - Before committing, run `python3 scripts/build_manifest.py`; it must report no problems.

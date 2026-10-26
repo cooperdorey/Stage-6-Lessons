@@ -16,6 +16,19 @@ function isRight(label){return /\b(we do|your turn)\b/i.test(label)}
 function math(el){
   if (typeof renderMathInElement !== 'function') return;
   renderMathInElement(el,{delimiters:[{left:'$',right:'$',display:false}],output:'mathml',throwOnError:false});
+  evenBrackets(el);
+}
+// \left( … \right) brackets stretch to the tallest thing inside, so a power inside makes
+// them oversized and lopsided next to ordinary brackets. Only let them stretch when they
+// hold something genuinely tall (a fraction or a matrix); otherwise draw them normal size.
+function evenBrackets(el){
+  el.querySelectorAll('mrow').forEach(row=>{
+    const kids=[...row.children], first=kids[0], last=kids[kids.length-1];
+    if (!first || first===last || first.tagName.toLowerCase()!=='mo' || last.tagName.toLowerCase()!=='mo') return;
+    if (first.getAttribute('fence')!=='true' || last.getAttribute('fence')!=='true') return;
+    if (row.querySelector('mfrac, mtable')) return;
+    [first,last].forEach(mo=>{ mo.setAttribute('stretchy','false'); mo.setAttribute('lspace','0'); mo.setAttribute('rspace','0') });
+  });
 }
 function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function recall(k){try{return localStorage.getItem(k)}catch(e){return null}}
