@@ -1,0 +1,8 @@
+[
+ {
+  "file": "question-generator.html",
+  "name": "Question generator",
+  "desc": "Random questions with worked solutions. Pick a topic or individual lessons.",
+  "courses": ["12 ADV", "11 ADV"]
+ }
+]

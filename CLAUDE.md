@@ -16,3 +16,7 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
 - Brackets: use plain `( )`; use `\left( … \right)` only around fractions. Don't use `\big`.
   (The app draws non-fraction `\left…\right` pairs at normal size so pairs always match.)
 - Before committing, run `python3 scripts/build_manifest.py`; it must report no problems.
+- Generators: one self-contained page per generator in `generators/`, registered in
+  `generators/generators.json`. They use the site's vendored KaTeX (MathML output), no CDNs.
+  In the question generator, test every generator function on many seeds before committing
+  (all maths must parse in KaTeX; no `NaN`, `undefined`, `+ -` or `1x`).

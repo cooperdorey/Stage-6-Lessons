@@ -55,6 +55,34 @@ a{color:inherit}
 .year.has-spines{padding-left:calc(24px + var(--n) * 14px)}
 .year:hover{border-color:var(--ink)}
 
+/* Start: Lessons or Generators */
+.start{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.choice{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:260px;padding:26px;
+  background:var(--sheet);border:1px solid var(--line);border-radius:6px 14px 14px 6px;text-decoration:none;color:var(--ink);overflow:hidden}
+.choice .spines{position:absolute;inset:0 auto 0 0;display:flex}
+.choice .spines i{width:14px;height:100%;background:var(--c)}
+.choice .spines i+i{box-shadow:inset 1px 0 0 rgba(255,255,255,.35)}
+.choice.has-spines{padding-left:calc(26px + var(--n) * 14px)}
+.choice .big{font-family:var(--card);font-weight:700;font-size:52px;line-height:1;margin-bottom:12px}
+.choice .small{color:var(--muted);font-size:14px}
+.choice:hover{border-color:var(--ink)}
+/* a die face, top right of the Generators tile */
+.choice .dice{position:absolute;top:26px;right:26px;width:64px;height:64px;border-radius:14px;background:var(--brand);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:10px}
+.choice .dice i{width:10px;height:10px;border-radius:50%;background:var(--brand-ink);place-self:center}
+.choice .dice i:nth-child(1){grid-area:1/1}.choice .dice i:nth-child(2){grid-area:1/3}.choice .dice i:nth-child(3){grid-area:2/2}
+.choice .dice i:nth-child(4){grid-area:3/1}.choice .dice i:nth-child(5){grid-area:3/3}
+.choice.gen{border-left:14px solid var(--brand)}
+
+/* Generator list */
+.gens{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.generator{display:flex;flex-direction:column;gap:8px;min-height:170px;padding:22px;background:var(--sheet);border:1px solid var(--line);
+  border-top:5px solid var(--brand);border-radius:4px 4px 12px 12px;text-decoration:none;color:var(--ink)}
+.generator .t{font-family:var(--card);font-weight:700;font-size:24px;line-height:1.2}
+.generator .d{color:var(--muted);font-size:14.5px}
+.generator .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.generator:hover{border-color:var(--ink);border-top-color:var(--brand)}
+
 /* Course: a coloured notebook cover */
 .course{position:relative;display:flex;flex-direction:column;min-height:250px;padding:22px 22px 20px 40px;border-radius:5px 14px 14px 5px;
   background:var(--course);color:var(--course-ink);text-decoration:none;overflow:hidden;border:0}
@@ -119,7 +147,7 @@ a{color:inherit}
   .lesson.open .side{transform:none}
 }
 @media (prefers-reduced-motion:reduce){.side{transition:none}}
-@media (max-width:600px){.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
+@media (max-width:600px){.choice{min-height:180px}.choice .big{font-size:40px}.choice .dice{width:48px;height:48px;padding:7px}.choice .dice i{width:8px;height:8px}.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
 
 /* ---------- cards (unchanged from the Year 11 app) ---------- */
 /* The deck is laid out at the cards' true size (two 760px columns) and scaled to fit. */

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Question generator – Stage 6 – Lessons</title>
+<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/icon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#8B1A1A">
+<style>
+/* Matches the Stage 6 – Lessons site (assets/app.css) */
+:root{--paper:#F2F3F5;--sheet:#FFFFFF;--ink:#1D232B;--muted:#5E6672;--line:#D9DDE3;--brand:#8B1A1A;--brand-ink:#FFFFFF;
+ --course:#1F3A68;--sol:#EEF6EE;--sol-ink:#2E7D32;--sol-line:#CFE3C6;--tag:#E9EBEF;
+ --ui:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+ --card:"Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif}
+@media (prefers-color-scheme:dark){:root{--paper:#16191E;--sheet:#20242B;--ink:#ECEEF1;--muted:#A5ACB7;--line:#343A43;
+ --brand:#E0827A;--brand-ink:#2A0F0D;--course:#8FB0E6;--sol:#1B2A1E;--sol-ink:#8FD19A;--sol-line:#2E4A33;--tag:#2A2F37;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif;font-size:1.08em}
+math[display="block"]{margin:.35em 0}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;padding:22px clamp(16px,5vw,64px) 0}
+.wordmark{font-family:var(--card);font-weight:700;font-size:19px;color:var(--brand);text-decoration:none}
+.crumbs{display:flex;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.crumbs>*+*::before{content:"›";margin:0 8px;color:var(--line)}
+.intro{max-width:1240px;margin:0 auto;padding:28px clamp(16px,5vw,64px) 0}
+.intro h1{font-family:var(--card);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1.05;margin:0}
+.intro p{margin:8px 0 0;color:var(--muted);max-width:65ch}
+.wrap{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;padding:24px clamp(16px,5vw,64px) 64px;max-width:1240px;margin:0 auto}
+aside{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+details{border:1px solid var(--line);border-top:4px solid var(--course);border-radius:4px 4px 10px 10px;margin-bottom:12px;background:var(--sheet)}
+summary{cursor:pointer;padding:10px 12px;display:flex;align-items:center;gap:8px;font-family:var(--card);font-weight:700;font-size:16px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .course{font-family:var(--ui);font-weight:600;font-size:11.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.lessons{padding:2px 12px 10px 34px}
+.lessons label{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:14px;cursor:pointer}
+.lessons input{margin-top:4px}
+input[type=checkbox]{accent-color:var(--brand)}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.ctl label{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
+.ctl input[type=number],.ctl input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit}
+.seedrow{display:flex;gap:6px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+button{font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--brand);background:transparent;color:var(--brand);cursor:pointer}
+button.primary{background:var(--brand);color:var(--brand-ink);font-weight:600;font-size:15px;width:100%;padding:10px;margin-top:8px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btnrow button{flex:1}
+main{min-width:0}
+.meta{color:var(--muted);font-size:13px;margin:0 0 12px}
+.empty{color:var(--muted);background:var(--sheet);border:1px dashed var(--line);border-radius:12px;padding:48px 24px;text-align:center}
+ol.qs{list-style:none;margin:0;padding:0}
+.q{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px;break-inside:avoid}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.num{font-family:var(--card);font-weight:700;font-size:22px;line-height:1;color:var(--brand);min-width:1.4em}
+.tag{font-size:12px;background:var(--tag);color:var(--muted);border-radius:999px;padding:2px 10px}
+.qhead button{margin-left:auto;padding:4px 10px}
+.prompt{font-family:var(--card);font-size:18px;line-height:1.7;overflow-x:auto}
+.sol{margin-top:12px;background:var(--sol);color:var(--sol-ink);border:1px solid var(--sol-line);border-radius:10px;padding:10px 16px;overflow-x:auto;font-family:var(--card);font-size:17px}
+.sol>div{margin:4px 0}
+.ans{font-weight:700;border-top:1px dashed var(--sol-line);padding-top:8px;margin-top:8px}
+table.tv{border-collapse:collapse;margin:8px 0}
+table.tv th,table.tv td{border:1px solid var(--sol-line);padding:4px 12px;text-align:center;font-weight:400}
+.key{display:none}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}aside{position:static;max-height:none}}
+@media print{
+ :root{--sheet:#fff;--ink:#000;--sol-ink:#000}
+ body{background:#fff;color:#000}
+ header,.intro,aside,.qhead button,.tag{display:none!important}
+ .wrap{display:block;padding:0}
+ .q{border:none;border-bottom:1px solid #ccc;border-radius:0;padding:10px 0 48px}
+ .sol{display:none!important}
+ body.print-key .key{display:block;break-before:page}
+ .key h2{font-family:var(--card);font-size:20px}
+ .key .q{padding-bottom:12px}
+ .key .sol{display:block!important;background:none;border:none;padding:0}
+}
+</style>
+</head>
+<body>
+<header>
+ <a class="wordmark" href="../#">Stage 6 – Lessons</a>
+ <nav class="crumbs" aria-label="Where you are"><a href="../#">Home</a><a href="../#generators">Generators</a><span>Question generator</span></nav>
+</header>
+<div class="intro">
+ <h1>Question generator</h1>
+ <p>Tick a topic or individual lessons, then generate. Every question has a worked solution. The same seed and lessons always give the same set, so a copied link reproduces it exactly.</p>
+</div>
+<div class="wrap">
+ <aside>
+  <div id="topics"></div>
+  <div class="ctl">
+   <div><label for="n">Questions</label><input id="n" type="number" min="1" max="40" value="8"></div>
+   <div><label for="seed">Seed</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New seed" aria-label="New seed">🎲</button></div></div>
+  </div>
+  <label class="check"><input type="checkbox" id="mix"> Shuffle question order</label>
+  <label class="check"><input type="checkbox" id="printkey" checked> Print answer key on last page</label>
+  <button class="primary" id="go">Generate</button>
+  <div class="btnrow">
+   <button id="toggleAll">Show all solutions</button>
+   <button id="print">Print</button>
+   <button id="copy">Copy link</button>
+  </div>
+ </aside>
+ <main>
+  <p class="meta" id="meta"></p>
+  <div id="out"><div class="empty">Select at least one lesson, then press Generate.</div></div>
+  <section class="key" id="key"></section>
+ </main>
+</div>
+
+<!-- KaTeX from the site’s own copy, rendered as MathML like the lesson cards -->
+<script src="../assets/vendor/katex.min.js"></script>
+<script src="../assets/vendor/auto-render.min.js"></script>
+
+<script id="engine">
+// ================= RANDOM (seeded) =================
+function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function makeRng(seed){const r=mulberry32(hashStr(String(seed)));return{
+ next:r,
+ int:(a,b)=>a+Math.floor(r()*(b-a+1)),
+ nz:(a,b)=>{let v;do{v=a+Math.floor(r()*(b-a+1))}while(v===0);return v},
+ pick:arr=>arr[Math.floor(r()*arr.length)],
+ sample:(arr,k)=>{const c=arr.slice();for(let i=c.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[c[i],c[j]]=[c[j],c[i]]}return c.slice(0,k)}
+}}
+
+// ================= FRACTIONS =================
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+class Fr{
+ constructor(n,d=1){if(d===0)throw Error('zero denominator');if(d<0){n=-n;d=-d}const g=gcd(n,d);this.n=n/g||0;this.d=d/g}
+ static of(x){return x instanceof Fr?x:new Fr(x,1)}
+ add(o){o=Fr.of(o);return new Fr(this.n*o.d+o.n*this.d,this.d*o.d)}
+ sub(o){return this.add(Fr.of(o).neg())}
+ mul(o){o=Fr.of(o);return new Fr(this.n*o.n,this.d*o.d)}
+ div(o){o=Fr.of(o);return new Fr(this.n*o.d,this.d*o.n)}
+ neg(){return new Fr(-this.n,this.d)}
+ abs(){return new Fr(Math.abs(this.n),this.d)}
+ isZero(){return this.n===0}
+ isInt(){return this.d===1}
+ val(){return this.n/this.d}
+ tex(){return this.d===1?String(this.n):(this.n<0?'-':'')+'\\frac{'+Math.abs(this.n)+'}{'+this.d+'}'}
+ btex(){return this.n<0?'\\left('+this.tex()+'\\right)':this.tex()}
+}
+const F=(n,d)=>new Fr(n,d);
+
+// ================= LATEX HELPERS =================
+// one signed term: coefficient c with variable part v (v may be '')
+function term(c,v,first){c=Fr.of(c);const neg=c.n<0,a=c.abs();let body;
+ if(v){body=(a.n===1&&a.d===1)?v:(a.d===1?a.n+v:'\\frac{'+a.n+'}{'+a.d+'}'+v)}else body=a.tex();
+ return first?(neg?'-':'')+body:(neg?' - ':' + ')+body}
+// list of [coef, varPart]
+function poly(ts){const t=ts.filter(x=>!Fr.of(x[0]).isZero());if(!t.length)return'0';return t.map((x,i)=>term(x[0],x[1],i===0)).join('')}
+const xp=n=>n===0?'':n===1?'x':'x^{'+n+'}';
+function xpF(e){return e.isInt()?xp(e.n):'x^{'+e.tex()+'}'}
+// polynomials as coefficient arrays, index = power
+function pTex(cs){const ts=[];for(let i=cs.length-1;i>=0;i--)ts.push([cs[i],xp(i)]);return poly(ts)}
+function pEval(cs,x){x=Fr.of(x);let s=F(0),p=F(1);for(let i=0;i<cs.length;i++){s=s.add(Fr.of(cs[i]).mul(p));p=p.mul(x)}return s}
+function pInt(cs){return [F(0),...cs.map((c,i)=>Fr.of(c).div(i+1))]}
+function pDer(cs){return cs.slice(1).map((c,i)=>Fr.of(c).mul(i+1))}
+// substitute a value into a polynomial, showing the working
+function subTex(cs,x){const parts=[];const xv=Fr.of(x).tex();
+ for(let i=cs.length-1;i>=0;i--){const c=Fr.of(cs[i]);if(c.isZero())continue;const neg=c.n<0,a=c.abs();let body;
+  if(i===0)body=a.tex();else{const pw=i===1?'('+xv+')':'('+xv+')^{'+i+'}';body=(a.n===1&&a.d===1?'':a.tex())+pw}
+  parts.push(parts.length?(neg?' - ':' + ')+body:(neg?'-':'')+body)}
+ return parts.join('')||'0'}
+function defIntSteps(cs,p,q){const P=pInt(cs);const vq=pEval(P,q),vp=pEval(P,p),v=vq.sub(vp);const pt=Fr.of(p).tex(),qt=Fr.of(q).tex();
+ return{v,lines:[
+  `$$\\int_{${pt}}^{${qt}}\\left(${pTex(cs)}\\right)dx = \\left[${pTex(P)}\\right]_{${pt}}^{${qt}}$$`,
+  `$$= \\left(${subTex(P,q)}\\right) - \\left(${subTex(P,p)}\\right)$$`,
+  `$$= ${vq.tex()} - ${vp.btex()} = ${v.tex()}$$`]}}
+const lin=(a,b)=>poly([[a,'x'],[b,'']]);
+const factor=r=>r===0?'x':`(${lin(1,-r)})`;
+function factored(k,p,q){const pre=k===1?'':k===-1?'-':String(k);const [r1,r2]=q===0?[q,p]:[p,q];return pre+factor(r1)+factor(r2)}
+function tableHTML(xs,ys){return `<table class="tv"><tr><th>$x$</th>${xs.map(x=>`<td>$${x}$</td>`).join('')}</tr><tr><th>$f(x)$</th>${ys.map(y=>`<td>$${y}$</td>`).join('')}</tr></table>`}
+
+// index-form terms (√x, 1/x^k, ...)
+function indexTerm(R,type){const a=R.nz(-8,8),A=Math.abs(a),s=A===1?'':A;
+ switch(type){
+  case'pow':{const n=R.int(2,5);return{a,e:F(n),disp:`${s}x^{${n}}`}}
+  case'sqrt':return{a,e:F(1,2),disp:`${s}\\sqrt{x}`}
+  case'recip':{const k=R.int(2,4);return{a,e:F(-k),disp:`\\frac{${A}}{x^{${k}}}`}}
+  case'rsqrt':return{a,e:F(-1,2),disp:`\\frac{${A}}{\\sqrt{x}}`}
+  case'cbrt':return{a,e:F(1,3),disp:`${s}\\sqrt[3]{x}`}}}
+function indexTerms(R){return R.sample(['pow','sqrt','recip','rsqrt','cbrt'],R.int(2,3)).map(t=>indexTerm(R,t)).sort((u,v)=>v.e.val()-u.e.val())}
+function joinDisp(ts){return ts.map((t,i)=>{const neg=t.a<0;return i===0?(neg?'-':'')+t.disp:(neg?' - ':' + ')+t.disp}).join('')}
+
+// ================= GENERATORS =================
+// Each returns {q: prompt HTML, sol: [lines], ans: HTML}. Math in $...$ or $$...$$.
+
+function gPower(R){const pw=R.sample([0,1,2,3,4,5,6],3).sort((a,b)=>b-a);const cs=pw.map(()=>R.nz(-9,9));
+ const f=poly(pw.map((n,i)=>[cs[i],xp(n)]));
+ const raw=pw.map((n,i)=>{const a=cs[i],neg=a<0,A=Math.abs(a);const body=n===0?(A===1?'x':A+'x'):`\\frac{${A===1?'':A}x^{${n+1}}}{${n+1}}`;return i===0?(neg?'-':'')+body:(neg?' - ':' + ')+body}).join('');
+ const res=poly(pw.map((n,i)=>[F(cs[i],n+1),xp(n+1)]))+' + C';
+ return{q:`Find $\\displaystyle\\int\\left(${f}\\right)dx$.`,
+  sol:[`$$\\int\\left(${f}\\right)dx = ${raw} + C$$`,`$$= ${res}$$`],ans:`$${res}$`}}
+
+function gIndices(R){const ts=indexTerms(R);
+ const idx=poly(ts.map(t=>[t.a,xpF(t.e)]));
+ const res=poly(ts.map(t=>{const e1=t.e.add(1);return[F(t.a).div(e1),xpF(e1)]}))+' + C';
+ return{q:`Find $\\displaystyle\\int\\left(${joinDisp(ts)}\\right)dx$.`,
+  sol:[`Write each term in index form:`,`$$\\int\\left(${idx}\\right)dx$$`,`Increase each index by 1 and divide by the new index:`,`$$= ${res}$$`],ans:`$${res}$`}}
+
+function gLinPow(R){const a=R.int(2,5),b=R.nz(-7,7),n=R.int(2,6),k=R.pick([1,1,2,3,4,6]);
+ const L=lin(a,b),kp=k===1?'':k;const res=term(F(k,a*(n+1)),`(${L})^{${n+1}}`,true)+' + C';
+ return{q:`Find $\\displaystyle\\int ${kp}(${L})^{${n}}\\,dx$.`,
+  sol:[`Using $\\displaystyle\\int (ax+b)^n\\,dx = \\frac{(ax+b)^{n+1}}{a(n+1)} + C$:`,
+   `$$\\int ${kp}(${L})^{${n}}\\,dx = \\frac{${kp}(${L})^{${n+1}}}{${a}\\times ${n+1}} + C$$`,`$$= ${res}$$`],ans:`$${res}$`}}
+
+function gDef(R){const deg=R.pick([2,2,3]);const cs=[...Array(deg+1)].map((_,i)=>i===deg?R.nz(-4,4):R.int(-6,6));
+ const p=R.int(-2,2),q=p+R.int(1,3);const D=defIntSteps(cs,p,q);
+ return{q:`Evaluate $\\displaystyle\\int_{${p}}^{${q}}\\left(${pTex(cs)}\\right)dx$.`,sol:D.lines,ans:`$${D.v.tex()}$`}}
+
+function gExp(R){const a=R.nz(-8,8),k=R.nz(-5,5);
+ if(R.next()<0.65){const b=R.pick([0,0,R.nz(-4,4)]);const ex=lin(k,b);const f=term(a,`e^{${ex}}`,true);
+  const res=term(F(a,k),`e^{${ex}}`,true)+' + C';
+  return{q:`Find $\\displaystyle\\int ${f}\\,dx$.`,
+   sol:[`Using $\\displaystyle\\int e^{ax+b}\\,dx = \\frac{1}{a}e^{ax+b} + C$:`,`$$\\int ${f}\\,dx = ${res}$$`],ans:`$${res}$`}}
+ const kx=lin(k,0),ek=k===1?'e':`e^{${k}}`,c=F(a,k),f=term(a,`e^{${kx}}`,true);const res=term(c,`\\left(${ek} - 1\\right)`,true);
+ return{q:`Evaluate $\\displaystyle\\int_{0}^{1} ${f}\\,dx$, leaving your answer in exact form.`,
+  sol:[`$$\\int_0^1 ${f}\\,dx = \\left[${term(c,`e^{${kx}}`,true)}\\right]_0^1$$`,`$$= ${term(c,`\\left(${ek} - e^{0}\\right)`,true)}$$`,`$$= ${res}$$`],ans:`$${res}$`}}
+
+function gLog(R){
+ if(R.next()<0.5){const k=R.int(1,9),a=R.nz(-6,6),b=R.nz(-9,9);const L=lin(a,b);const res=term(F(k,a),`\\ln\\left|${L}\\right|`,true)+' + C';
+  return{q:`Find $\\displaystyle\\int\\frac{${k}}{${L}}\\,dx$.`,
+   sol:[`Using $\\displaystyle\\int\\frac{1}{ax+b}\\,dx = \\frac{1}{a}\\ln|ax+b| + C$:`,`$$\\int\\frac{${k}}{${L}}\\,dx = ${res}$$`],ans:`$${res}$`}}
+ const m=R.int(1,5),b=R.int(-6,6),c=R.nz(-9,9);const f=poly([[1,'x^{2}'],[b,'x'],[c,'']]),df=lin(2,b),num=lin(2*m,m*b);
+ const res=term(m,`\\ln\\left|${f}\\right|`,true)+' + C';
+ return{q:`Find $\\displaystyle\\int\\frac{${num}}{${f}}\\,dx$.`,
+  sol:[`The derivative of the denominator is $${df}$, so the numerator is ${m===1?'exactly the derivative':`$${m}$ times the derivative`}.`,
+   `Using $\\displaystyle\\int\\frac{f'(x)}{f(x)}\\,dx = \\ln|f(x)| + C$:`,`$$\\int\\frac{${num}}{${f}}\\,dx = ${res}$$`],ans:`$${res}$`}}
+
+function gTrig(R){const fn=R.pick(['sin','cos','sec']),a=R.nz(-6,6),k=R.int(1,6),arg=k===1?'x':`${k}x`;
+ const f=term(a,fn==='sec'?`\\sec^2 ${arg}`:`\\${fn} ${arg}`,true);
+ const rule={sin:`\\int\\sin ax\\,dx = -\\frac{1}{a}\\cos ax + C`,cos:`\\int\\cos ax\\,dx = \\frac{1}{a}\\sin ax + C`,sec:`\\int\\sec^2 ax\\,dx = \\frac{1}{a}\\tan ax + C`}[fn];
+ const res=(fn==='sin'?term(F(-a,k),`\\cos ${arg}`,true):fn==='cos'?term(F(a,k),`\\sin ${arg}`,true):term(F(a,k),`\\tan ${arg}`,true))+' + C';
+ return{q:`Find $\\displaystyle\\int ${f}\\,dx$.`,sol:[`Using $\\displaystyle ${rule}$:`,`$$\\int ${f}\\,dx = ${res}$$`],ans:`$${res}$`}}
+
+function gArea(R){const k=R.pick([1,-1,2,-2,3]),p=R.int(-4,3),q=p+R.int(1,5);const cs=[k*p*q,-k*(p+q),k];
+ const D=defIntSteps(cs,p,q),A=D.v.abs();
+ return{q:`Find the area enclosed between the curve $y = ${pTex(cs)}$ and the $x$-axis.`,
+  sol:[`Find the $x$-intercepts: $${pTex(cs)} = ${factored(k,p,q)} = 0$, so $x = ${p}$ or $x = ${q}$.`,...D.lines,
+   `${D.v.n<0?'The integral is negative because the region lies below the $x$-axis. ':''}Area $= \\left|${D.v.tex()}\\right| = ${A.tex()}$ square units.`],
+  ans:`$${A.tex()}$ units$^2$`}}
+
+function gSigned(R){const k=R.pick([1,-1]),p=R.int(-3,1),q=p+R.int(1,3),t=q+R.int(1,2);const cs=[k*p*q,-k*(p+q),k];
+ const I1=defIntSteps(cs,p,q),I2=defIntSteps(cs,q,t),A=I1.v.abs().add(I2.v.abs());
+ return{q:`Find the total area enclosed between $y = ${pTex(cs)}$, the $x$-axis and the lines $x = ${p}$ and $x = ${t}$.`,
+  sol:[`$${pTex(cs)} = ${factored(k,p,q)}$, so the curve crosses the $x$-axis at $x = ${q}$ inside the interval. Split the integral there.`,
+   ...I1.lines,...I2.lines,
+   `Area $= \\left|${I1.v.tex()}\\right| + \\left|${I2.v.tex()}\\right| = ${A.tex()}$ square units.`,
+   `(Integrating straight from $${p}$ to $${t}$ gives $${I1.v.add(I2.v).tex()}$, which is wrong because the regions cancel.)`],
+  ans:`$${A.tex()}$ units$^2$`}}
+
+function gBetween(R){const b=R.int(-4,4),c=R.int(-5,5),p=R.int(-3,2),q=p+R.int(1,4);
+ const par=[c,b,1],m=b+p+q,d=c-p*q,L=lin(m,d),diff=[-p*q,p+q,-1];const D=defIntSteps(diff,p,q);
+ return{q:`Find the area enclosed between the parabola $y = ${pTex(par)}$ and the line $y = ${L}$.`,
+  sol:[`Find the intersection points: $${pTex(par)} = ${L}$`,`$$${pTex([p*q,-(p+q),1])} = 0 \\;\\Rightarrow\\; ${factored(1,p,q)} = 0$$`,
+   `so $x = ${p}$ or $x = ${q}$. The line is above the parabola between these points, so integrate (line − parabola):`,
+   ...D.lines,`Area $= ${D.v.tex()}$ square units.`],ans:`$${D.v.tex()}$ units$^2$`}}
+
+function gTrap(R){const n=R.pick([4,4,3,5,6]);
+ if(R.next()<0.5){const cs=[R.int(-3,5),R.int(-4,4),R.nz(-2,2)],h=R.pick([F(1),F(1,2),F(2)]),a=F(R.int(0,2)),b=a.add(h.mul(n));
+  const xs=[...Array(n+1)].map((_,i)=>a.add(h.mul(i))),ys=xs.map(x=>pEval(cs,x));
+  const inner=ys.slice(1,-1).reduce((s,y)=>s.add(y),F(0)),A=h.div(2).mul(ys[0].add(inner.mul(2)).add(ys[n]));
+  return{q:`Use the trapezoidal rule with ${n+1} function values to approximate $\\displaystyle\\int_{${a.tex()}}^{${b.tex()}}\\left(${pTex(cs)}\\right)dx$.`,
+   sol:[`$h = \\dfrac{${b.tex()} - ${a.btex()}}{${n}} = ${h.tex()}$`,tableHTML(xs.map(x=>x.tex()),ys.map(y=>y.tex())),
+    `$$\\approx \\frac{${h.tex()}}{2}\\left[${ys[0].tex()} + 2\\left(${ys.slice(1,-1).map((y,i)=>i?y.btex():y.tex()).join(' + ')}\\right) + ${ys[n].btex()}\\right]$$`,
+    `$$= ${A.tex()}${A.isInt()?'':' \\approx '+A.val().toFixed(3)}$$`],ans:`$${A.tex()}$`}}
+ const fns=[{t:'\\sqrt{x}',f:Math.sqrt,a:[0,1]},{t:'\\frac{1}{x}',f:x=>1/x,a:[1,2]},{t:'e^{x}',f:Math.exp,a:[0,1]},{t:'\\ln x',f:Math.log,a:[1,2]},{t:'\\frac{1}{1+x^{2}}',f:x=>1/(1+x*x),a:[0,1]}];
+ const fn=R.pick(fns),h=R.pick([0.5,1]),a=R.pick(fn.a),b=a+h*n;
+ const xs=[...Array(n+1)].map((_,i)=>a+h*i),ys=xs.map(x=>+fn.f(x).toFixed(4));
+ const A=h/2*(ys[0]+2*ys.slice(1,-1).reduce((s,y)=>s+y,0)+ys[n]);
+ return{q:`Use the trapezoidal rule with ${n+1} function values to approximate $\\displaystyle\\int_{${a}}^{${b}} ${fn.t}\\,dx$. Give your answer correct to 3 decimal places.`,
+  sol:[`$h = \\dfrac{${b} - ${a}}{${n}} = ${h}$`,tableHTML(xs,ys.map(y=>y.toFixed(4))),
+   `$$\\approx \\frac{${h}}{2}\\left[${ys[0].toFixed(4)} + 2\\left(${ys.slice(1,-1).map(y=>y.toFixed(4)).join(' + ')}\\right) + ${ys[n].toFixed(4)}\\right]$$`,
+   `$$\\approx ${A.toFixed(3)}$$`],ans:`$\\approx ${A.toFixed(3)}$`}}
+
+// ---- Year 11 review ----
+function gDiffIdx(R){const ts=indexTerms(R);
+ const idx=poly(ts.map(t=>[t.a,xpF(t.e)])),res=poly(ts.map(t=>[F(t.a).mul(t.e),xpF(t.e.sub(1))]));
+ return{q:`Differentiate $y = ${joinDisp(ts)}$.`,
+  sol:[`Write in index form: $y = ${idx}$`,`Multiply by the index, then decrease the index by 1:`,`$$\\frac{dy}{dx} = ${res}$$`],ans:`$\\dfrac{dy}{dx} = ${res}$`}}
+
+function gTangent(R){const cs=[R.int(-5,5),R.int(-5,5),R.int(-3,3),R.nz(-2,2)],p=R.int(-2,2);
+ const d=pDer(cs),y0=pEval(cs,p),m=pEval(d,p),c=y0.sub(m.mul(p)),L=poly([[m,'x'],[c,'']]);
+ return{q:`Find the equation of the tangent to $y = ${pTex(cs)}$ at the point where $x = ${p}$.`,
+  sol:[`$\\dfrac{dy}{dx} = ${pTex(d)}$`,`At $x = ${p}$: $m = ${subTex(d,p)} = ${m.tex()}$`,`and $y = ${subTex(cs,p)} = ${y0.tex()}$`,
+   `$$y - ${y0.btex()} = ${m.btex()}\\left(x - ${F(p).btex()}\\right)$$`,`$$y = ${L}$$`],ans:`$y = ${L}$`}}
+
+// ================= TOPICS & LESSONS =================
+// Rename / reorder / regroup freely. Lesson ids are used in share links, so keep them stable once in use.
+const TOPICS=[
+ {id:'12adv-integration',name:'Integral calculus',course:'Year 12 Advanced',lessons:[
+  {id:'ic-power',name:'Power rule (polynomials)',gen:gPower},
+  {id:'ic-index',name:'Negative and fractional indices',gen:gIndices},
+  {id:'ic-chain',name:'Reverse chain rule: (ax + b)ⁿ',gen:gLinPow},
+  {id:'ic-def',name:'Definite integrals',gen:gDef},
+  {id:'ic-exp',name:'Integrating exponentials',gen:gExp},
+  {id:'ic-log',name:'Integrals giving logarithms',gen:gLog},
+  {id:'ic-trig',name:'Integrating trig functions',gen:gTrig},
+  {id:'ic-area',name:'Area between curve and x-axis',gen:gArea},
+  {id:'ic-signed',name:'Area: curve crosses the x-axis',gen:gSigned},
+  {id:'ic-between',name:'Area between two curves',gen:gBetween},
+  {id:'ic-trap',name:'Trapezoidal rule',gen:gTrap}]},
+ {id:'11adv-calculus',name:'Differential calculus (review)',course:'Year 11 Advanced',lessons:[
+  {id:'dc-index',name:'Differentiating with indices',gen:gDiffIdx},
+  {id:'dc-tangent',name:'Equation of a tangent',gen:gTangent}]}
+];
+const LESSONS={};TOPICS.forEach(t=>t.lessons.forEach(l=>{l.topic=t;LESSONS[l.id]=l}));
+
+function buildSet(ids,n,seed,mix){const R=makeRng(seed+'|'+ids.join(','));
+ const base=Math.floor(n/ids.length),extra=new Set(R.sample(ids,n%ids.length));
+ const out=[],seen=new Set();
+ ids.forEach(id=>{const L=LESSONS[id],cnt=base+(extra.has(id)?1:0);
+  for(let i=0;i<cnt;i++){let Q,tries=0;do{Q=L.gen(R);tries++}while(seen.has(Q.q)&&tries<30);seen.add(Q.q);out.push({...Q,lesson:L})}});
+ if(mix){for(let i=out.length-1;i>0;i--){const j=Math.floor(R.next()*(i+1));[out[i],out[j]]=[out[j],out[i]]}}
+ return out}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const $=id=>document.getElementById(id);
+ const newSeed=()=>Math.random().toString(36).slice(2,7);
+ const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+ // ---- sidebar ----
+ $('topics').innerHTML=TOPICS.map((t,ti)=>`
+  <details ${ti===0?'open':''} data-topic="${t.id}">
+   <summary><input type="checkbox" class="tsel" aria-label="Select all in ${esc(t.name)}"> ${esc(t.name)}<span class="course">${esc(t.course)}</span></summary>
+   <div class="lessons">${t.lessons.map(l=>`<label><input type="checkbox" class="lsel" value="${l.id}"> ${esc(l.name)}</label>`).join('')}</div>
+  </details>`).join('');
+ function syncTopic(det){const ls=[...det.querySelectorAll('.lsel')],on=ls.filter(x=>x.checked).length,ts=det.querySelector('.tsel');ts.checked=on===ls.length;ts.indeterminate=on>0&&on<ls.length}
+ document.querySelectorAll('details[data-topic]').forEach(det=>{
+  const ts=det.querySelector('.tsel');
+  ts.addEventListener('click',e=>e.stopPropagation());
+  ts.addEventListener('change',()=>{det.querySelectorAll('.lsel').forEach(x=>x.checked=ts.checked);ts.indeterminate=false});
+  det.querySelectorAll('.lsel').forEach(x=>x.addEventListener('change',()=>syncTopic(det)));
+ });
+ const selected=()=>[...document.querySelectorAll('.lsel:checked')].map(x=>x.value);
+
+ // ---- state from link ----
+ const h=new URLSearchParams(location.hash.slice(1));
+ $('seed').value=h.get('seed')||newSeed();
+ if(h.get('n'))$('n').value=h.get('n');
+ $('mix').checked=h.get('mix')==='1';
+ const fromLink=(h.get('l')||'').split(',').filter(id=>LESSONS[id]);
+ fromLink.forEach(id=>{const el=document.querySelector(`.lsel[value="${id}"]`);if(el)el.checked=true});
+ document.querySelectorAll('details[data-topic]').forEach(syncTopic);
+
+ $('dice').onclick=()=>{$('seed').value=newSeed();generate()};
+ $('go').onclick=generate;
+ $('print').onclick=()=>{document.body.classList.toggle('print-key',$('printkey').checked);window.print()};
+ $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('copy').textContent='Copied!'}catch(e){$('copy').textContent='Copy failed'}setTimeout(()=>$('copy').textContent='Copy link',1500)};
+ let allShown=false;
+ $('toggleAll').onclick=()=>{allShown=!allShown;document.querySelectorAll('#out .sol').forEach(s=>s.hidden=!allShown);
+  document.querySelectorAll('#out .reveal').forEach(b=>b.textContent=allShown?'Hide solution':'Show solution');
+  $('toggleAll').textContent=allShown?'Hide all solutions':'Show all solutions'};
+
+ function render(el){if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],output:'mathml',throwOnError:false});evenBrackets(el)}
+ // same as assets/app.js: \left…\right only stretches around fractions and matrices
+ function evenBrackets(el){el.querySelectorAll('mrow').forEach(row=>{const k=[...row.children],f=k[0],l=k[k.length-1];
+  if(!f||f===l||f.tagName.toLowerCase()!=='mo'||l.tagName.toLowerCase()!=='mo')return;
+  if(f.getAttribute('fence')!=='true'||l.getAttribute('fence')!=='true')return;
+  if(row.querySelector('mfrac, mtable'))return;
+  [f,l].forEach(mo=>{mo.setAttribute('stretchy','false');mo.setAttribute('lspace','0');mo.setAttribute('rspace','0')})})}
+ const solHTML=Q=>`<div class="sol">${Q.sol.map(s=>`<div>${s}</div>`).join('')}<div class="ans">Answer: ${Q.ans}</div></div>`;
+
+ function generate(){
+  const ids=selected();const n=Math.max(1,Math.min(40,+$('n').value||8));const seed=$('seed').value.trim()||newSeed();$('seed').value=seed;
+  if(!ids.length){$('out').innerHTML='<div class="empty">Select at least one lesson, then press Generate.</div>';$('meta').textContent='';$('key').innerHTML='';return}
+  const p=new URLSearchParams({seed,n,l:ids.join(',')});if($('mix').checked)p.set('mix','1');history.replaceState(null,'','#'+p);
+  let set;try{set=buildSet(ids,n,seed,$('mix').checked)}catch(e){$('out').innerHTML=`<div class="empty">Generator error: ${esc(String(e.message))}</div>`;return}
+  const topics=[...new Set(set.map(Q=>Q.lesson.topic.name))].join(', ');
+  $('meta').textContent=`${set.length} questions · ${topics} · seed ${seed}`;
+  $('out').innerHTML=`<ol class="qs">${set.map((Q,i)=>`
+   <li class="q"><div class="qhead"><span class="num">${i+1}</span><span class="tag">${esc(Q.lesson.name)}</span><button class="reveal">Show solution</button></div>
+   <div class="prompt">${Q.q}</div>${solHTML(Q).replace('<div class="sol">','<div class="sol" hidden>')}</li>`).join('')}</ol>`;
+  $('key').innerHTML=`<h2>Answer key</h2><ol class="qs">${set.map((Q,i)=>`<li class="q"><div class="qhead"><span class="num">${i+1}</span></div>${solHTML(Q)}</li>`).join('')}</ol>`;
+  document.querySelectorAll('#out .reveal').forEach(b=>b.onclick=()=>{const s=b.closest('.q').querySelector('.sol');s.hidden=!s.hidden;b.textContent=s.hidden?'Show solution':'Hide solution'});
+  allShown=false;$('toggleAll').textContent='Show all solutions';
+  render($('out'));render($('key'));
+ }
+ if(fromLink.length)generate();
+});
+</script>
+</body>
+</html>

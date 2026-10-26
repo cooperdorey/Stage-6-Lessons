@@ -16,7 +16,7 @@ lessons/
         1.01-the-derivative-of-exponential-functions.html
 ```
 
-The home page steps through Year → Course → Topic, and a topic opens with its lessons
+The start page offers Lessons or Generators. Lessons steps through Year → Course → Topic, and a topic opens with its lessons
 down the side. All of it comes from the folders.
 
 Course folders also set their short name, colour and order in `_meta.json`:
@@ -35,6 +35,23 @@ Every push to `main` runs `.github/workflows/pages.yml`, which rebuilds the less
 checks every lesson file, and publishes the site. If a lesson has a problem (missing
 title, unclosed `$`, unbalanced `<div>`), the run fails and the live site stays as it was;
 the run log says which file and what to fix.
+
+## Generators
+
+The start page offers **Lessons** or **Generators**. Generators live in `generators/`,
+one self-contained page each, listed in `generators/generators.json`:
+
+```json
+[{"file": "question-generator.html", "name": "Question generator",
+  "desc": "Random questions with worked solutions.", "courses": ["12 ADV", "11 ADV"]}]
+```
+
+`courses` uses the courses' `short` names, so the chips pick up the course colours.
+
+The question generator's topics and lessons are the `TOPICS` list near the bottom of its
+`<script id="engine">`. Each lesson points at a generator function that returns the question,
+the worked-solution lines and the answer. Lesson ids appear in shared links, so keep them
+stable once used.
 
 ## A lesson file
 

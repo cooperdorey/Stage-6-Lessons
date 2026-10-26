@@ -1,6 +1,8 @@
 // Stage 6 – Lessons
 // Reads manifest.json (built from the lessons/ folder tree).
-// Addresses:  #                      → choose a year
+// Addresses:  #                      → start: Lessons or Generators
+//             #generators            → list of generators (generators/generators.json)
+//             #lessons               → choose a year
 //             #year-12               → choose a course
 //             #year-12/maths-advanced → choose a topic
 //             #year-12/maths-advanced/01-differential-calculus → last lesson used in that topic
@@ -92,16 +94,63 @@ function route(){
   if (t) return location.replace('#' + lastIn(t).id);
   if (c) return showTopics(y, c);
   if (y) return showCourses(y);
-  showYears();
+  if (parts[0]==='lessons') return showYears();
+  if (parts[0]==='generators') return showGenerators();
+  showStart();
 }
 function showHome(){ $('lesson').hidden = true; $('home').hidden = false; $('status').hidden = true; window.scrollTo(0,0) }
 function crumbs(items){
   $('homeCrumbs').innerHTML = items.map(i => i.href ? `<a href="${i.href}">${esc(i.label)}</a>` : `<span>${esc(i.label)}</span>`).join('');
 }
 
+// ---------- home: start ----------
+let GENS = null;
+async function loadGenerators(){
+  if (GENS) return GENS;
+  try { const r = await fetch('generators/generators.json',{cache:'no-store'}); GENS = r.ok ? await r.json() : [] }
+  catch(e){ GENS = [] }
+  return GENS;
+}
+async function showStart(){
+  showHome(); crumbs([]); paint($('home'), null);
+  $('prompt').textContent = 'What do you need?';
+  $('promptSub').textContent = '';
+  const tiles = $('tiles'); tiles.className = 'tiles start';
+  const courses = M.years.flatMap(y=>y.courses), n = LIST.length;
+  const lessons = document.createElement('a'); lessons.className = 'choice has-spines'; lessons.href = '#lessons';
+  lessons.style.setProperty('--n', courses.length);
+  lessons.innerHTML = `<span class="spines">${courses.map(c=>`<i style="--c:${esc(c.colour||'#9AA1AB')}" title="${esc(c.short||c.name)}"></i>`).join('')}</span>
+    <span class="big">Lessons</span><span class="small">Teaching cards for OneNote · ${plural(n,'lesson')}</span>`;
+  const gens = document.createElement('a'); gens.className = 'choice gen'; gens.href = '#generators';
+  gens.innerHTML = `<span class="dice" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="big">Generators</span><span class="small" id="genCount">Random questions with worked solutions</span>`;
+  tiles.replaceChildren(lessons, gens);
+  document.title = 'Stage 6 – Lessons';
+  const g = await loadGenerators();
+  const c = $('genCount'); if (c && g.length) c.textContent = `Random questions with worked solutions · ${plural(g.length,'generator')}`;
+}
+
+// ---------- home: generators ----------
+async function showGenerators(){
+  showHome(); crumbs([{label:'Home',href:'#'},{label:'Generators'}]); paint($('home'), null);
+  $('prompt').textContent = 'Choose a generator';
+  $('promptSub').textContent = 'Each opens in its own page. Questions come with worked solutions.';
+  const tiles = $('tiles'); tiles.className = 'tiles gens'; tiles.replaceChildren();
+  document.title = 'Generators – Stage 6 – Lessons';
+  const g = await loadGenerators();
+  if (!g.length){ tiles.innerHTML = '<p class="empty-note">No generators yet.</p>'; return }
+  const colourOf = s => { for (const y of M.years) for (const c of y.courses) if (c.short===s) return c.colour; return '' };
+  tiles.replaceChildren(...g.map(x=>{
+    const a = document.createElement('a'); a.className = 'generator'; a.href = 'generators/' + encodeURI(x.file);
+    a.innerHTML = `<span class="t">${esc(x.name)}</span><span class="d">${esc(x.desc||'')}</span>
+      <span class="chips">${(x.courses||[]).map(s=>{const col=colourOf(s)||'#5E6672';return `<span class="course-chip" style="--course:${esc(col)};--course-ink:${inkFor(col)}">${esc(s)}</span>`}).join('')}</span>`;
+    return a;
+  }));
+}
+
 // ---------- home: year ----------
 function showYears(){
-  showHome(); crumbs([]); paint($('home'), null);
+  showHome(); crumbs([{label:'Home',href:'#'},{label:'Lessons'}]); paint($('home'), null);
   $('prompt').textContent = 'Which year?';
   $('promptSub').textContent = '';
   const tiles = $('tiles'); tiles.className = 'tiles';
@@ -114,12 +163,12 @@ function showYears(){
       <span class="small">${plural(y.courses.length,'course')}, ${plural(n,'lesson')}</span>`;
     return a;
   }));
-  document.title = 'Stage 6 – Lessons';
+  document.title = 'Lessons – Stage 6 – Lessons';
 }
 
 // ---------- home: course ----------
 function showCourses(y){
-  showHome(); crumbs([{label:'Years',href:'#'},{label:y.name}]); paint($('home'), null);
+  showHome(); crumbs([{label:'Home',href:'#'},{label:'Lessons',href:'#lessons'},{label:y.name}]); paint($('home'), null);
   $('prompt').textContent = 'Choose a course';
   $('promptSub').textContent = y.name;
   const tiles = $('tiles'); tiles.className = 'tiles';
@@ -137,7 +186,7 @@ function showCourses(y){
 
 // ---------- home: topic ----------
 function showTopics(y, c){
-  showHome(); crumbs([{label:'Years',href:'#'},{label:y.name,href:'#'+y.id},{label:c.short||c.name}]); paint($('home'), c);
+  showHome(); crumbs([{label:'Home',href:'#'},{label:'Lessons',href:'#lessons'},{label:y.name,href:'#'+y.id},{label:c.short||c.name}]); paint($('home'), c);
   $('prompt').textContent = 'Choose a topic';
   $('promptSub').textContent = `${y.name} ${c.name}`;
   const tiles = $('tiles'); tiles.className = 'tiles topics';
