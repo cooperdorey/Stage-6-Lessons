@@ -1,0 +1,104 @@
+---
+code: 1.09
+title: Mixed Differentiation: Choosing the Rule
+---
+
+<div class="c"><div class="h">Year 12 Mathematics Advanced<span>Episode 9</span></div><div class="b">
+<div class="title">1.09 – Mixed Differentiation: Choosing the Rule</div>
+</div></div>
+
+<div class="c"><div class="h">Prior knowledge<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:330px">
+<b>1.</b> Differentiate.
+<div class="g pad" style="grid-template-columns:1fr 1fr 1fr;font-size:26px;gap:44px 30px">
+<div>a) $e^{x}$<div class="ws">$e^{x}$</div></div>
+<div>b) $\ln x$<div class="ws">$\dfrac{1}{x}$</div></div>
+<div>c) $\cos x$<div class="ws">$-\sin x$</div></div>
+<div>d) $\tan x$<div class="ws">$\sec^{2}x$</div></div>
+<div>e) $\sec x$<div class="ws">$\tan x\sec x$</div></div>
+<div>f) $5^{x}$<div class="ws">$(\ln 5)\,5^{x}$</div></div>
+</div>
+</div></div>
+
+<div class="c"><div class="h">Category · model<span>Episode 9 · Choosing the rule</span></div><div class="b">
+<div class="cq">Which rule comes first?</div>
+<div class="g" style="grid-template-columns:repeat(3,1fr);font-size:26px;gap:44px 20px;text-align:center">
+<div>$e^{x}+\sin x$<div class="ws">Standard: a sum</div></div>
+<div>$e^{x}\sin x$<div class="ws">Product</div></div>
+<div>$\dfrac{e^{x}}{\sin x}$<div class="ws">Quotient</div></div>
+<div>$e^{\sin x}$<div class="ws">Chain</div></div>
+<div>$\sin\left(e^{x}\right)$<div class="ws">Chain</div></div>
+<div>$3e^{x}-\sin x$<div class="ws">Standard: a sum</div></div>
+</div>
+</div></div>
+
+<div class="c"><div class="h">Category · rule<span>Episode 9 · Choosing the rule</span></div><div class="b" style="padding:40px 34px">
+<div class="key solo">Find the last thing done to $x$.<br>Multiplied → product rule. Divided → quotient rule.<br>A function of a function → chain rule. Added or subtracted → differentiate each term.</div>
+</div></div>
+
+<div class="c"><div class="h">Category · your turn<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:300px">
+<b>2.</b> Which rule comes first?
+<div class="g pad" style="grid-template-columns:1fr 1fr 1fr;font-size:26px;gap:52px 30px">
+<div>a) $x^{2}\ln x$<div class="ws">Product</div></div>
+<div>b) $\ln\left(x^{2}+1\right)$<div class="ws">Chain</div></div>
+<div>c) $\dfrac{\cos x}{x}$<div class="ws">Quotient</div></div>
+<div>d) $\tan x+e^{2x}$<div class="ws">Standard: a sum</div></div>
+<div>e) $\left(\sin x+1\right)^{3}$<div class="ws">Chain</div></div>
+<div>f) $xe^{-x}$<div class="ws">Product</div></div>
+</div>
+</div></div>
+
+<div class="c"><div class="h">I Do<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:400px">
+Differentiate $y=e^{2x}\sin 3x$, giving your answer in factorised form.
+<div class="ws">Last operation: multiplied, so product rule.<br>
+$u=e^{2x},\ u'=2e^{2x} \qquad v=\sin 3x,\ v'=3\cos 3x$<br>
+$\dfrac{dy}{dx}=2e^{2x}\sin 3x+3e^{2x}\cos 3x$<br>
+$\phantom{\dfrac{dy}{dx}}=e^{2x}(2\sin 3x+3\cos 3x)$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 1<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:400px">
+Differentiate $y=x^{3}e^{-2x}$, giving your answer in factorised form.
+<div class="ws">Product rule.<br>
+$u=x^{3},\ u'=3x^{2} \qquad v=e^{-2x},\ v'=-2e^{-2x}$<br>
+$\dfrac{dy}{dx}=3x^{2}e^{-2x}-2x^{3}e^{-2x}=x^{2}e^{-2x}(3-2x)$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 2<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:330px">
+Differentiate $y=\dfrac{\tan x}{e^{x}}$.
+<div class="ws">Quotient rule.<br>
+$u=\tan x,\ u'=\sec^{2}x \qquad v=e^{x},\ v'=e^{x}$<br>
+$\dfrac{dy}{dx}=\dfrac{e^{x}\sec^{2}x-e^{x}\tan x}{e^{2x}}=\dfrac{\sec^{2}x-\tan x}{e^{x}}$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 3<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:300px">
+Differentiate $y=\sin\left(e^{2x}\right)$.
+<div class="ws">Chain rule: the angle is $e^{2x}$, with derivative $2e^{2x}$.<br>
+$\dfrac{dy}{dx}=2e^{2x}\cos\left(e^{2x}\right)$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 4<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:300px">
+Differentiate $y=\ln\left(x^{2}+\sin x\right)$.
+<div class="ws">Chain rule: $\dfrac{f'(x)}{f(x)}$ with $f(x)=x^{2}+\sin x$.<br>
+$\dfrac{dy}{dx}=\dfrac{2x+\cos x}{x^{2}+\sin x}$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 5<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:300px">
+Differentiate $y=\left(1+\ln x\right)^{4}$.
+<div class="ws">Chain rule on the outside.<br>
+$\dfrac{dy}{dx}=4\left(1+\ln x\right)^{3}\times\dfrac{1}{x}=\dfrac{4\left(1+\ln x\right)^{3}}{x}$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 6<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:420px">
+Differentiate $y=\dfrac{e^{x}}{\left(1+e^{x}\right)^{2}}$, simplifying fully.
+<div class="ws">Quotient rule, with the chain rule for $v$.<br>
+$u=e^{x},\ u'=e^{x} \qquad v=\left(1+e^{x}\right)^{2},\ v'=2e^{x}\left(1+e^{x}\right)$<br>
+$\dfrac{dy}{dx}=\dfrac{e^{x}\left(1+e^{x}\right)^{2}-e^{x}\cdot 2e^{x}\left(1+e^{x}\right)}{\left(1+e^{x}\right)^{4}}$<br>
+$\phantom{\dfrac{dy}{dx}}=\dfrac{e^{x}\left(1+e^{x}-2e^{x}\right)}{\left(1+e^{x}\right)^{3}}=\dfrac{e^{x}\left(1-e^{x}\right)}{\left(1+e^{x}\right)^{3}}$</div>
+</div></div>
+
+<div class="c"><div class="h">We Do 7<span>Episode 9 · Choosing the rule</span></div><div class="b" style="min-height:420px">
+Find the equation of the tangent to $y=\ln(\cos x)$ at the point where $x=\dfrac{\pi}{4}$.
+<div class="ws">Point: $y=\ln\dfrac{1}{\sqrt{2}}=-\dfrac{1}{2}\ln 2$, so $\left(\dfrac{\pi}{4},\,-\dfrac{1}{2}\ln 2\right)$<br>
+Gradient: $\dfrac{dy}{dx}=\dfrac{-\sin x}{\cos x}=-\tan x$, so $m=-1$<br>
+$y+\dfrac{1}{2}\ln 2=-\left(x-\dfrac{\pi}{4}\right)$<br>
+$y=-x+\dfrac{\pi}{4}-\dfrac{1}{2}\ln 2$</div>
+</div></div>
