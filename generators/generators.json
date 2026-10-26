@@ -2,7 +2,7 @@
  {
   "file": "question-generator.html",
   "name": "Question generator",
-  "desc": "Random questions with worked solutions. Pick a topic or individual lessons.",
+  "desc": "Random questions with worked solutions. Year 12 integral calculus and Year 11 Working with functions.",
   "courses": ["12 ADV", "11 ADV"]
  }
 ]
