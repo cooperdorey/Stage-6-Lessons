@@ -2,7 +2,19 @@
  {
   "file": "question-generator.html",
   "name": "Question generator",
-  "desc": "Random questions with worked solutions. Year 12 integral calculus and Year 11 Working with functions.",
-  "courses": ["12 ADV", "11 ADV"]
+  "desc": "Random questions with worked solutions. Year 12 differential and integral calculus; Year 11 Working with functions and Exponential and logarithmic functions.",
+  "courses": [
+   "12 ADV",
+   "11 ADV"
+  ]
+ },
+ {
+  "file": "lsq.html",
+  "name": "LSQ generator",
+  "desc": "A Low Stakes Quiz from the topics you tick, sized to the time you set, on two A4 pages. Downloads as a PDF with a separate answers PDF.",
+  "courses": [
+   "12 ADV",
+   "11 ADV"
+  ]
  }
 ]

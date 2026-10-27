@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LSQ generator – Dorey Desk</title>
+<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/icons/icon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#0F766E">
+<style>
+/* Matches the Dorey Desk site (assets/app.css) */
+:root{--paper:#F2F3F5;--sheet:#FFFFFF;--ink:#1D232B;--muted:#5E6672;--line:#D9DDE3;--brand:#0F766E;--brand-ink:#FFFFFF;
+ --course:#1F3A68;--tag:#E9EBEF;
+ --ui:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+ --card:"Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif}
+@media (prefers-color-scheme:dark){:root{--paper:#16191E;--sheet:#20242B;--ink:#ECEEF1;--muted:#A5ACB7;--line:#343A43;
+ --brand:#5FCFC2;--brand-ink:#062A26;--course:#8FB0E6;--tag:#2A2F37;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;padding:22px clamp(16px,5vw,64px) 0}
+.wordmark{font-family:var(--card);font-weight:700;font-size:19px;color:var(--brand);text-decoration:none}
+.crumbs{display:flex;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.crumbs>*+*::before{content:"›";margin:0 8px;color:var(--line)}
+.intro{max-width:1240px;margin:0 auto;padding:28px clamp(16px,5vw,64px) 0}
+.intro h1{font-family:var(--card);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1.05;margin:0}
+.intro p{margin:8px 0 0;color:var(--muted);max-width:68ch}
+.wrap{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;padding:24px clamp(16px,5vw,64px) 64px;max-width:1240px;margin:0 auto}
+aside{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+details{border:1px solid var(--line);border-top:4px solid var(--course);border-radius:4px 4px 10px 10px;margin-bottom:12px;background:var(--sheet)}
+summary{cursor:pointer;padding:10px 12px;display:flex;align-items:center;gap:8px;font-family:var(--card);font-weight:700;font-size:16px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .course{font-family:var(--ui);font-weight:600;font-size:11.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.lessons{padding:2px 12px 10px 34px}
+.lessons label{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:14px;cursor:pointer}
+.lessons input{margin-top:4px}
+.lessons .grp{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 2px}
+.lessons .grp:first-child{margin-top:4px}
+input[type=checkbox]{accent-color:var(--brand)}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.ctl .full{grid-column:1/-1}
+.ctl label{font-size:12px;color:var(--muted);display:block;margin-bottom:3px}
+.ctl input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit}
+.seedrow{display:flex;gap:6px}
+.hint{font-size:12px;color:var(--muted);margin:-4px 0 8px}
+button{font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--brand);background:transparent;color:var(--brand);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+button.primary{background:var(--brand);color:var(--brand-ink);font-weight:600;font-size:15px;width:100%;padding:10px;margin-top:4px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btnrow button{flex:1 1 45%}
+main{min-width:0}
+.meta{color:var(--muted);font-size:13px;margin:0 0 12px}
+.empty{color:var(--muted);background:var(--sheet);border:1px dashed var(--line);border-radius:12px;padding:48px 24px;text-align:center}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button[aria-pressed=true]{background:var(--brand);color:var(--brand-ink)}
+
+/* ---------- A4 pages (794 × 1123 px = 210 × 297 mm at 96 dpi) ---------- */
+.pages{display:flex;flex-direction:column;align-items:center;gap:18px}
+.pagebox{width:calc(794px * var(--z,1));height:calc(1123px * var(--z,1));flex:none}
+.page{width:794px;height:1123px;background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.18),0 8px 24px rgba(0,0,0,.08);
+ transform:scale(var(--z,1));transform-origin:top left;padding:52px 60px 44px;position:relative;overflow:hidden;
+ font-family:var(--card);font-size:15.5px;line-height:1.55;color-scheme:light}
+.page math{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",math,serif;font-size:1.08em}
+.page math[display="block"]{margin:.3em 0;text-align:left}
+.phead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1F3A68;padding-bottom:8px;margin-bottom:6px}
+.phead h2{margin:0;font-size:26px;line-height:1.1;color:#1F3A68}
+.phead .sub{font-family:var(--ui);font-size:12px;color:#444;margin-top:4px}
+.phead .right{text-align:right;font-family:var(--ui);font-size:12.5px;color:#222;line-height:1.6}
+.details{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:18px;font-family:var(--ui);font-size:12.5px;margin:10px 0 4px}
+.details div{border-bottom:1px solid #999;padding-bottom:2px;white-space:nowrap}
+.inst{font-family:var(--ui);font-size:11.5px;color:#444;margin:6px 0 4px}
+.cont{font-family:var(--ui);font-size:11.5px;color:#555;border-bottom:1px solid #bbb;padding-bottom:4px;margin-bottom:4px;display:flex;justify-content:space-between}
+.pq{display:grid;grid-template-columns:30px minmax(0,1fr) 62px;column-gap:6px;border-top:1px solid #d5d5d5;padding-top:9px}
+.phead~.details~.inst+.pq,.cont+.pq{border-top:none}
+.pq .n{font-weight:700;font-size:17px;color:#1F3A68}
+.pq .mk{font-family:var(--ui);font-size:11.5px;color:#333;text-align:right;padding-top:3px;white-space:nowrap}
+.pq .space{grid-column:1/-1}
+.pfoot{position:absolute;left:60px;right:60px;bottom:22px;display:flex;justify-content:space-between;font-family:var(--ui);font-size:10.5px;color:#666}
+.akey .pq{grid-template-columns:30px minmax(0,1fr) 62px;padding-bottom:8px}
+.akey .steps{font-size:14px;color:#14532D}
+.akey .steps>div{margin:2px 0}
+.akey .final{font-weight:700;border-top:1px dashed #9cc29f;margin-top:4px;padding-top:4px;color:#111}
+.measure{position:absolute;left:-10000px;top:0;visibility:hidden}
+.busy{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:9;color:#fff;font-size:16px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}aside{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header>
+ <a class="wordmark" href="../#">Dorey Desk</a>
+ <nav class="crumbs" aria-label="Where you are"><a href="../#">Home</a><a href="../#generators">Generators</a><span>LSQ generator</span></nav>
+</header>
+<div class="intro">
+ <h1>Low Stakes Quiz</h1>
+ <p>Tick the topics or lessons to draw from. The quiz picks a random spread of them, sized to the time you set, laid out on two A4 pages with working space. Download it as a PDF, with a separate answers PDF.</p>
+</div>
+<div class="wrap">
+ <aside>
+  <div id="topics"></div>
+  <div class="ctl">
+   <div class="full"><label for="title">Title</label><input id="title" type="text" value="Low Stakes Quiz"></div>
+   <div><label for="cls">Class</label><input id="cls" type="text" placeholder="e.g. 12ADV"></div>
+   <div><label for="date">Date</label><input id="date" type="date"></div>
+   <div><label for="mins">Time (minutes)</label><input id="mins" type="number" min="5" max="60" value="20"></div>
+   <div><label for="marks">Marks</label><input id="marks" type="number" min="3" max="40"></div>
+   <div class="full hint">Marks follow the time at about a mark a minute. Change either one.</div>
+   <div class="full"><label for="seed">Seed</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New quiz" aria-label="New quiz">🎲</button></div></div>
+  </div>
+  <button class="primary" id="go">Generate</button>
+  <div class="btnrow">
+   <button id="pdfQ" disabled>Download quiz PDF</button>
+   <button id="pdfA" disabled>Download answers PDF</button>
+   <button id="copy">Copy link</button>
+  </div>
+ </aside>
+ <main>
+  <p class="meta" id="meta"></p>
+  <div class="tabs" id="tabs" hidden><button id="tQ" aria-pressed="true">Quiz</button><button id="tA" aria-pressed="false">Answers</button></div>
+  <div id="out"><div class="empty">Tick at least one lesson, then press Generate.</div></div>
+  <div id="ans" hidden></div>
+ </main>
+</div>
+<div class="measure" id="measure"></div>
+<div class="busy" id="busy" hidden>Making the PDF…</div>
+
+<script src="../assets/vendor/katex.min.js"></script>
+<script src="../assets/vendor/auto-render.min.js"></script>
+<script src="../assets/vendor/html-to-image.js"></script>
+<script src="../assets/vendor/jspdf.umd.min.js"></script>
+<script src="engine.js?v=dev"></script>
+<script>
+const MIN_PER_MARK=1;                   // about a mark a minute for short fluency questions (HSC papers run at 1.8)
+const PAGE_H=1123,PAD_TOP=52,PAD_BOT=44,FOOT=30;
+const SPACE_MIN=34,SPACE_PER_MARK=40;   // working space (px) per question: minimum and per mark
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const $=id=>document.getElementById(id);
+ const newSeed=()=>Math.random().toString(36).slice(2,7);
+ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+ // ---- sidebar (same as the question generator) ----
+ $('topics').innerHTML=TOPICS.map((t,ti)=>`
+  <details ${ti===0?'open':''} data-topic="${t.id}">
+   <summary><input type="checkbox" class="tsel" aria-label="Select all in ${esc(t.name)}"> ${esc(t.name)}<span class="course">${esc(t.course)}</span></summary>
+   <div class="lessons">${t.lessons.map((l,i)=>(l.group&&l.group!==(t.lessons[i-1]||{}).group?`<div class="grp">${esc(l.group)}</div>`:'')+`<label><input type="checkbox" class="lsel" value="${l.id}"> ${esc(l.name)}</label>`).join('')}</div>
+  </details>`).join('');
+ function syncTopic(det){const ls=[...det.querySelectorAll('.lsel')],on=ls.filter(x=>x.checked).length,ts=det.querySelector('.tsel');ts.checked=on===ls.length;ts.indeterminate=on>0&&on<ls.length}
+ document.querySelectorAll('details[data-topic]').forEach(det=>{const ts=det.querySelector('.tsel');
+  ts.addEventListener('click',e=>e.stopPropagation());
+  ts.addEventListener('change',()=>{det.querySelectorAll('.lsel').forEach(x=>x.checked=ts.checked);ts.indeterminate=false});
+  det.querySelectorAll('.lsel').forEach(x=>x.addEventListener('change',()=>syncTopic(det)))});
+ const selected=()=>[...document.querySelectorAll('.lsel:checked')].map(x=>x.value);
+
+ // ---- state from link ----
+ const h=new URLSearchParams(location.hash.slice(1));
+ $('seed').value=h.get('seed')||newSeed();
+ $('mins').value=h.get('t')||20;
+ $('marks').value=h.get('m')||Math.round($('mins').value/MIN_PER_MARK);
+ if(h.get('c'))$('cls').value=h.get('c');
+ if(h.get('ti'))$('title').value=h.get('ti');
+ $('date').value=h.get('d')||new Date().toLocaleDateString('en-CA');
+ const fromLink=(h.get('l')||'').split(',').filter(id=>LESSONS[id]);
+ fromLink.forEach(id=>{const el=document.querySelector(`.lsel[value="${id}"]`);if(el)el.checked=true});
+ document.querySelectorAll('details[data-topic]').forEach(det=>{syncTopic(det);if(det.querySelector('.lsel:checked'))det.open=true});
+
+ $('mins').addEventListener('input',()=>{$('marks').value=Math.max(3,Math.round((+$('mins').value||20)/MIN_PER_MARK))});
+ $('dice').onclick=()=>{$('seed').value=newSeed();generate()};
+ $('go').onclick=generate;
+ $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('copy').textContent='Copied!'}catch(e){$('copy').textContent='Copy failed'}setTimeout(()=>$('copy').textContent='Copy link',1500)};
+ $('tQ').onclick=()=>show('q');$('tA').onclick=()=>show('a');
+ function show(w){$('out').hidden=w!=='q';$('ans').hidden=w!=='a';$('tQ').setAttribute('aria-pressed',w==='q');$('tA').setAttribute('aria-pressed',w==='a');fitZoom()}
+
+ // ---- maths ----
+ function render(el){renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],output:'mathml',throwOnError:false});evenBrackets(el);unaryMinus(el);fnSpace(el)}
+ // a thin space either side of sin, cos, ln, log … (browsers draw the function-application mark with no gap)
+ function fnSpace(el){el.querySelectorAll('mo').forEach(mo=>{if(mo.textContent!=='\u2061')return;
+  let nx=mo.nextElementSibling;while(nx&&nx.tagName.toLowerCase()==='mrow')nx=nx.firstElementChild;
+  if(!(nx&&nx.tagName.toLowerCase()==='mo'&&/^[(\[]$/.test(nx.textContent)))mo.setAttribute('rspace','0.17em');
+  const fn=mo.previousElementSibling,before=fn&&fn.previousElementSibling;
+  if(before&&before.tagName.toLowerCase()!=='mo'){const sp=document.createElementNS('http://www.w3.org/1998/Math/MathML','mspace');sp.setAttribute('width','0.17em');fn.before(sp)}})}
+ function unaryMinus(el){el.querySelectorAll('mo').forEach(mo=>{const t=mo.textContent;if(t!=='−'&&t!=='-')return;
+  const prev=mo.previousElementSibling;if(prev&&!(prev.tagName.toLowerCase()==='mo'&&!/^[)\]|}]$/.test(prev.textContent)))return;
+  mo.setAttribute('lspace','0');mo.setAttribute('rspace','0')})}
+ function evenBrackets(el){el.querySelectorAll('mrow').forEach(row=>{const k=[...row.children],f=k[0],l=k[k.length-1];
+  if(!f||f===l||f.tagName.toLowerCase()!=='mo'||l.tagName.toLowerCase()!=='mo')return;
+  if(f.getAttribute('fence')!=='true'||l.getAttribute('fence')!=='true')return;
+  if(row.querySelector('mfrac, mtable'))return;
+  [f,l].forEach(mo=>{mo.setAttribute('stretchy','false');mo.setAttribute('lspace','0');mo.setAttribute('rspace','0')})})}
+
+ // ---- choosing questions ----
+ // Lessons are dealt round-robin across topics (in a random order) so the quiz spreads over everything ticked.
+ // Each question is kept only if it fits the marks still to fill; a lesson is not reused until all have been used.
+ function buildQuiz(ids,target,seed){const R=makeRng('lsq|'+seed+'|'+ids.join(','));
+  const byTopic=new Map();R.sample(ids,ids.length).forEach(id=>{const t=LESSONS[id].topic.id;if(!byTopic.has(t))byTopic.set(t,[]);byTopic.get(t).push(id)});
+  const deck=[];const lists=R.sample([...byTopic.values()],byTopic.size);let more=true;
+  for(let i=0;more;i++){more=false;lists.forEach(L=>{if(i<L.length){deck.push(L[i]);more=true}})}
+  const out=[],seen=new Set();let total=0,misses=0,pos=0;
+  while(total<target&&misses<deck.length*4){const id=deck[pos%deck.length];pos++;const L=LESSONS[id];
+   let Q,tries=0;do{Q=L.gen(R);tries++}while(seen.has(Q.q)&&tries<30);
+   const mk=Q.marks||L.marks||2;
+   if(seen.has(Q.q)||total+mk>target){misses++;continue}
+   seen.add(Q.q);out.push({...Q,marks:mk,lesson:L});total+=mk;misses=0}
+  return out}
+
+ // ---- page building ----
+ const fmtDate=d=>{if(!d)return'';const [y,m,dd]=d.split('-');return `${+dd}/${+m}/${y}`};
+ function headHTML(info){return `<div class="phead"><div><h2>${esc(info.title)}</h2><div class="sub">${esc(info.topics)}</div></div>
+   <div class="right">${info.cls?esc(info.cls)+'<br>':''}Time allowed: ${info.mins} minutes<br>Total: ${info.total} marks</div></div>
+   <div class="details"><div>Name:</div><div>Date: ${esc(fmtDate(info.date))}</div><div>Mark: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${info.total}</div></div>
+   <div class="inst">Show relevant working in the space under each question. Calculators may be used.</div>`}
+ // display maths sits left-aligned in the flow of a question, so show it as inline maths in display style
+ const inl=s=>String(s).replace(/\$\$([\s\S]+?)\$\$/g,(m,x)=>`<div>$\\displaystyle ${x}$</div>`);
+ const qHTML=(Q,i,space)=>`<div class="pq"><div class="n">${i+1}</div><div class="p">${inl(Q.q).replace(/\\frac/g,'\\dfrac')}</div><div class="mk">${Q.marks} mark${Q.marks>1?'s':''}</div>${space==null?'':`<div class="space" style="height:${space}px"></div>`}</div>`;
+ const aHTML=(Q,i)=>`<div class="pq"><div class="n">${i+1}</div><div class="steps">${Q.sol.map(s=>`<div>${inl(s)}</div>`).join('')}<div class="final">Answer: ${inl(Q.ans)}</div></div><div class="mk">${Q.marks} mark${Q.marks>1?'s':''}</div></div>`;
+ const foot=(info,p,n,label)=>`<div class="pfoot"><span>${esc(info.title)}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span><span>Page ${p} of ${n}</span></div>`;
+
+ // measure each block at page width
+ function measure(htmls,headHtml){const m=$('measure');
+  m.innerHTML=`<div class="page" id="mp">${headHtml||''}${htmls.join('')}</div>`;render(m);
+  const page=m.firstChild,blocks=[...page.querySelectorAll(':scope>.pq')],hd=headHtml?blocks.length?blocks[0].offsetTop-PAD_TOP:page.scrollHeight:0;
+  const hs=blocks.map(b=>b.getBoundingClientRect().height);m.innerHTML='';return{hs,hd}}
+
+ // pack quiz questions onto two pages; returns null if they do not fit
+ function packQuiz(set,info){const head=headHTML(info),{hs,hd}=measure(set.map((Q,i)=>qHTML(Q,i)),head);
+  const contH=28,avail1=PAGE_H-PAD_TOP-PAD_BOT-FOOT-hd,avail2=PAGE_H-PAD_TOP-PAD_BOT-FOOT-contH;
+  const need=i=>hs[i]+SPACE_MIN+SPACE_PER_MARK*set[i].marks*0.5;
+  // always use both pages: pick the split that leaves the fullest page with the most room
+  const n=set.length,pre=[0];for(let i=0;i<n;i++)pre.push(pre[i]+need(i));
+  let k=-1,best=Infinity;
+  if(n===1){if(pre[1]<=avail1)k=1}
+  else for(let j=1;j<n;j++){const r=Math.max(pre[j]/avail1,(pre[n]-pre[j])/avail2);if(r<=1&&r<best){best=r;k=j}}
+  if(k<0)return null;
+  // share each page's leftover height in proportion to marks
+  const pages=[[0,k,avail1],[k,set.length,avail2]].filter(([a,b])=>b>a).map(([a,b,av])=>{const idx=[...Array(b-a)].map((_,j)=>a+j);
+   const base=idx.reduce((s,i)=>s+hs[i],0),mk=idx.reduce((s,i)=>s+set[i].marks,0),spare=av-base-2;
+   return idx.map(i=>({i,space:Math.floor(spare*set[i].marks/mk)}))});
+  return pages}
+
+ function quizPages(set,info){let pages=packQuiz(set,info),s=set;
+  while(!pages&&s.length>1){s=s.slice(0,-1);pages=packQuiz(s,info)}
+  return{pages,set:s}}
+
+ function answerPages(set,info){const {hs}=measure(set.map(aHTML)),avail=PAGE_H-PAD_TOP-PAD_BOT-FOOT-60;const pages=[];let cur=[],used=0;
+  hs.forEach((h,i)=>{if(cur.length&&used+h>avail){pages.push(cur);cur=[];used=0}cur.push(i);used+=h+4});if(cur.length)pages.push(cur);return pages}
+
+ let current=null;
+ function generate(){
+  const ids=selected();const seed=$('seed').value.trim()||newSeed();$('seed').value=seed;
+  const mins=Math.max(5,Math.min(60,+$('mins').value||20)),target=Math.max(3,Math.min(40,+$('marks').value||Math.round(mins/MIN_PER_MARK)));
+  if(!ids.length){$('out').innerHTML='<div class="empty">Tick at least one lesson, then press Generate.</div>';$('meta').textContent='';$('tabs').hidden=true;$('pdfQ').disabled=$('pdfA').disabled=true;return}
+  const p=new URLSearchParams({seed,t:mins,m:target,l:ids.join(',')});if($('cls').value.trim())p.set('c',$('cls').value.trim());
+  if($('title').value.trim()&&$('title').value.trim()!=='Low Stakes Quiz')p.set('ti',$('title').value.trim());history.replaceState(null,'','#'+p);
+  let set;try{set=buildQuiz(ids,target,seed)}catch(e){$('out').innerHTML=`<div class="empty">Generator error: ${esc(e.message)}</div>`;return}
+  const topicNames=()=>[...new Set(set.map(Q=>Q.lesson.topic.name))].join(' · ');
+  const info={title:$('title').value.trim()||'Low Stakes Quiz',cls:$('cls').value.trim(),date:$('date').value,mins};
+  info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=topicNames();
+  let {pages,set:fit}=quizPages(set,info);
+  if(fit.length<set.length){set=fit;info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=topicNames();({pages,set:fit}=quizPages(set,info))}
+  const n=pages.length;
+  $('out').innerHTML=`<div class="pages">${pages.map((pg,pi)=>`<div class="pagebox"><div class="page qpage">${pi===0?headHTML(info):`<div class="cont"><span>${esc(info.title)} (continued)</span><span>Name: ______________________</span></div>`}${pg.map(({i,space})=>qHTML(set[i],i,space)).join('')}${foot(info,pi+1,n)}</div></div>`).join('')}</div>`;
+  const ap=answerPages(set,info);
+  $('ans').innerHTML=`<div class="pages">${ap.map((pg,pi)=>`<div class="pagebox"><div class="page apage akey"><div class="phead"><div><h2>${esc(info.title)}: answers</h2><div class="sub">${esc(info.topics)}</div></div><div class="right">${info.cls?esc(info.cls)+'<br>':''}${esc(fmtDate(info.date))}<br>Total: ${info.total} marks</div></div>${pg.map(i=>aHTML(set[i],i)).join('')}${foot(info,pi+1,ap.length,'Answers')}</div></div>`).join('')}</div>`;
+  render($('out'));render($('ans'));
+  const short=info.total<target?` (${target} asked: the closest fit on two pages)`:'';
+  $('meta').textContent=`${set.length} questions · ${info.total} marks${short} · ${mins} minutes · ${n} page${n>1?'s':''} · seed ${seed}`;
+  $('tabs').hidden=false;show('q');$('pdfQ').disabled=$('pdfA').disabled=false;current={info,seed};
+ }
+
+ // ---- fit pages to the panel width ----
+ function fitZoom(){const w=$('out').hidden?$('ans').clientWidth:$('out').clientWidth;const z=Math.min(1,(w||794)/794);document.querySelectorAll('.pages').forEach(p=>p.style.setProperty('--z',z))}
+ new ResizeObserver(fitZoom).observe(document.querySelector('main'));
+
+ // ---- PDF ----
+ async function toPDF(sel,name){const pages=[...document.querySelectorAll(sel)];if(!pages.length)return;$('busy').hidden=false;
+  const wasQ=$('out').hidden,wasA=$('ans').hidden;$('out').hidden=false;$('ans').hidden=false;
+  document.querySelectorAll('.pages').forEach(p=>p.style.setProperty('--z',1));
+  try{const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true});
+   for(let i=0;i<pages.length;i++){const url=await htmlToImage.toJpeg(pages[i],{pixelRatio:2.5,quality:.92,backgroundColor:'#ffffff',width:794,height:1123,style:{transform:'none'}});
+    if(i)pdf.addPage();pdf.addImage(url,'JPEG',0,0,210,297,undefined,'FAST')}
+   pdf.save(name)}
+  catch(e){alert('Could not make the PDF: '+e.message)}
+  finally{$('out').hidden=wasQ;$('ans').hidden=wasA;fitZoom();$('busy').hidden=true}}
+ const fname=k=>{const c=current||{info:{}};return [c.info.cls||'LSQ',k,(c.info.date||''),c.seed].filter(Boolean).join('_').replace(/[^\w.-]+/g,'-')+'.pdf'};
+ $('pdfQ').onclick=()=>toPDF('#out .page','LSQ-'+fname('quiz').replace(/^LSQ_/,''));
+ $('pdfA').onclick=()=>toPDF('#ans .page','LSQ-'+fname('answers').replace(/^LSQ_/,''));
+
+ if(fromLink.length)generate();
+});
+</script>
+</body>
+</html>
