@@ -11,6 +11,9 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
   on model cards. The app hides them in lesson view.
 - No exercise card. Labels with "We Do" / "your turn" go right; nothing else may use those words.
 - New topic: create the folder and a `_meta.json` with `{"name": "…"}`.
+- A topic's Dorey's Resource Book goes in the topic folder as `drb.pdf` (other editions as
+  `drb-<label>.pdf`). The LaTeX source lives in the Lesson Creator project, not here; commit the
+  compiled PDF. Choosing a topic shows Lessons / DRB; `#…/<topic>/drb` is the DRB page.
 - Course `_meta.json` also has `short`, `colour` and `order` (colours chosen by Coop:
   11 ADV blue, 11 STD light green, 12 STD 1 light teal, 12 STD 2 dark purple, 12 ADV navy).
 - Brackets: use plain `( )`; use `\left( … \right)` only around fractions. Don't use `\big`.

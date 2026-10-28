@@ -74,6 +74,53 @@ a{color:inherit}
 .choice .dice i:nth-child(4){grid-area:3/1}.choice .dice i:nth-child(5){grid-area:3/3}
 .choice.gen{border-left:14px solid var(--brand)}
 
+/* Topic: Lessons or DRB. Both take the course colour. */
+.pick{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:260px;padding:26px;
+  background:var(--sheet);border:1px solid var(--line);border-left:14px solid var(--course);border-radius:6px 14px 14px 6px;
+  text-decoration:none;color:var(--ink);overflow:hidden}
+.pick .big{font-family:var(--card);font-weight:700;font-size:52px;line-height:1;margin-bottom:12px}
+.pick .small{color:var(--muted);font-size:14px}
+.pick:hover{border-color:var(--ink);border-left-color:var(--course)}
+.pick.empty{cursor:default;opacity:.55}
+.pick.empty:hover{border-color:var(--line);border-left-color:var(--course)}
+.pick.empty .small{font-style:italic}
+.pick-icon{position:absolute;top:26px;right:26px;width:64px;height:64px}
+/* Lessons: a small fan of cards with course-coloured headers */
+.pick-lessons .pick-icon i{position:absolute;width:46px;height:34px;border-radius:5px;background:#fff;border:1px solid #cfd4da;
+  box-shadow:inset 0 9px 0 var(--course)}
+.pick-lessons .pick-icon i:nth-child(1){left:0;top:0;transform:rotate(-8deg)}
+.pick-lessons .pick-icon i:nth-child(2){left:9px;top:12px}
+.pick-lessons .pick-icon i:nth-child(3){left:18px;top:26px;transform:rotate(6deg)}
+/* DRB: a booklet cover */
+.pick-drb .pick-icon i,.drb-cover .pick-icon i{position:absolute;inset:0 8px;border-radius:2px 7px 7px 2px;background:var(--course);
+  box-shadow:inset 6px 0 0 rgba(0,0,0,.22)}
+.pick-drb .pick-icon i::before,.pick-drb .pick-icon i::after,.drb-cover .pick-icon i::before,.drb-cover .pick-icon i::after{
+  content:"";position:absolute;left:14px;right:8px;height:3px;border-radius:2px;background:var(--course-ink);opacity:.85}
+.pick-drb .pick-icon i::before,.drb-cover .pick-icon i::before{top:16px}
+.pick-drb .pick-icon i::after,.drb-cover .pick-icon i::after{top:25px;right:16px;opacity:.55}
+
+/* DRB page: the PDF fills the space under a short bar */
+.drb{min-height:100vh;display:flex;flex-direction:column}
+.drb-bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px;padding:22px clamp(16px,5vw,64px) 16px;
+  border-bottom:1px solid var(--line)}
+.drb-head{flex:1;min-width:240px}
+.drb-kicker{margin:0;color:var(--muted);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.drb-head h1{font-family:var(--card);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.1;margin:4px 0 6px;
+  border-left:6px solid var(--course);padding-left:12px}
+.drb-head p#drbMeta{margin:0;color:var(--muted);font-size:14px}
+.btn{text-decoration:none;display:inline-block}
+.btn.quiet{border-color:var(--line);color:var(--ink)}
+.drb-view{flex:1;display:flex;padding:16px clamp(16px,5vw,64px) 24px}
+.drb-view iframe{flex:1;width:100%;min-height:calc(100vh - 190px);border:1px solid var(--line);border-radius:8px;background:#fff}
+.drb-cover{margin:24px auto;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;color:var(--muted)}
+.drb-cover .pick-icon{position:relative;top:auto;right:auto;width:96px;height:120px}
+.drb-cover p{margin:0;max-width:28ch}
+/* in a lesson's side panel */
+.side-drb{display:block;margin:0 12px 8px;padding:10px 14px;border-radius:8px;border:1px solid var(--course);background:var(--sheet);
+  color:var(--ink);text-decoration:none;font-family:var(--card);font-weight:700;font-size:15px;line-height:1.3}
+.side-drb small{display:block;font-family:var(--ui);font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
+.side-drb:hover{background:var(--course-tint)}
+
 /* Generator list */
 .gens{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 .generator{display:flex;flex-direction:column;gap:8px;min-height:170px;padding:22px;background:var(--sheet);border:1px solid var(--line);
@@ -147,7 +194,7 @@ a{color:inherit}
   .lesson.open .side{transform:none}
 }
 @media (prefers-reduced-motion:reduce){.side{transition:none}}
-@media (max-width:600px){.choice{min-height:180px}.choice .big{font-size:40px}.choice .dice{width:48px;height:48px;padding:7px}.choice .dice i{width:8px;height:8px}.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
+@media (max-width:600px){.choice,.pick{min-height:180px}.choice .big,.pick .big{font-size:40px}.pick-icon{transform:scale(.75);transform-origin:top right}.choice .dice{width:48px;height:48px;padding:7px}.choice .dice i{width:8px;height:8px}.year{min-height:170px}.course{min-height:150px}.course .short{font-size:34px}.tiles{gap:14px;margin-top:28px}}
 
 /* ---------- cards (unchanged from the Year 11 app) ---------- */
 /* The deck is laid out at the cards' true size (two 760px columns) and scaled to fit. */

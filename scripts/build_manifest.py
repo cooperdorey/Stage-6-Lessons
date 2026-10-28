@@ -12,10 +12,14 @@ Each lesson file starts with front matter:
 then its cards. Optional: a line <!-- solutions --> followed by separate
 solution cards; otherwise worked solutions sit inside cards as <div class="ws">.
 
+A topic folder may also hold the topic's Dorey's Resource Book as drb.pdf.
+Extra editions sit beside it as drb-<label>.pdf (e.g. drb-student.pdf) and
+show as extra downloads.
+
 Run from the repo root:  python3 scripts/build_manifest.py
 Exits non-zero (failing the deploy) if a lesson has a problem.
 """
-import json, os, re, sys
+import hashlib, json, os, re, sys, zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LESSONS = os.path.join(ROOT, 'lessons')
@@ -68,6 +72,44 @@ def read_lesson(path, rel):
         problems.append(f'{rel}: odd number of $ signs (an unclosed maths expression)')
     return {'code': fm['code'], 'title': fm['title'], 'cards': cards}
 
+def pdf_info(path, rel):
+    with open(path, 'rb') as fh:
+        data = fh.read()
+    if not data.startswith(b'%PDF'):
+        problems.append(f'{rel}: not a PDF file')
+        return None
+    # page count: the largest /Count (the root page tree), which pdflatex often
+    # keeps inside compressed object streams
+    counts = [int(n) for n in re.findall(rb'/Count\s+(\d+)', data)]
+    for s in re.findall(rb'stream\r?\n(.*?)endstream', data, re.S):
+        try:
+            counts += [int(n) for n in re.findall(rb'/Count\s+(\d+)', zlib.decompress(s))]
+        except zlib.error:
+            pass
+    pages = max(counts, default=0)
+    return {'path': rel, 'bytes': len(data), 'pages': pages,
+            'v': hashlib.sha1(data).hexdigest()[:8]}
+
+def read_drb(tp):
+    """drb.pdf (the main edition) plus any drb-<label>.pdf editions."""
+    files = sorted(f for f in os.listdir(tp) if re.fullmatch(r'drb(-[\w-]+)?\.pdf', f, re.I))
+    main, extras = None, []
+    for f in files:
+        rel = os.path.relpath(os.path.join(tp, f), ROOT).replace(os.sep, '/')
+        info = pdf_info(os.path.join(tp, f), rel)
+        if not info:
+            continue
+        if f.lower() == 'drb.pdf':
+            main = info
+        else:
+            info['label'] = f[4:-4].replace('-', ' ').capitalize()
+            extras.append(info)
+    if not main and extras:
+        main = extras.pop(0)
+    if main:
+        main['extras'] = extras
+    return main
+
 years = []
 for y in subdirs(LESSONS):
     yp = os.path.join(LESSONS, y)
@@ -89,9 +131,11 @@ for y in subdirs(LESSONS):
                     lessons.append({'id': lid, 'code': info['code'], 'title': info['title'],
                                     'path': rel, 'cards': info['cards']})
             lessons.sort(key=lambda l: code_key(l['code']))
-            if lessons:
+            drb = read_drb(tp)
+            if lessons or drb:
                 topics.append({'id': t, 'name': meta_name(tp, nice(t)),
-                               'num': str(int(num.group(1))) if num else '', 'lessons': lessons})
+                               'num': str(int(num.group(1))) if num else '', 'lessons': lessons,
+                               'drb': drb})
         m = read_meta(cp)
         # courses with no lessons yet are kept, so the home page can show them as "coming soon"
         courses.append({'id': c, 'name': m.get('name', nice(c)), 'short': m.get('short', ''),
@@ -105,7 +149,8 @@ with open(os.path.join(ROOT, 'manifest.json'), 'w', encoding='utf-8') as fh:
     json.dump({'years': years}, fh, ensure_ascii=False, indent=1)
 
 n = sum(len(t['lessons']) for y in years for c in y['courses'] for t in c['topics'])
-print(f'manifest.json: {len(years)} years, {n} lessons')
+d = sum(1 for y in years for c in y['courses'] for t in c['topics'] if t['drb'])
+print(f'manifest.json: {len(years)} years, {n} lessons, {d} DRB')
 if problems:
     print('\nProblems:\n  ' + '\n  '.join(problems))
     sys.exit(1)

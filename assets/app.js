@@ -5,7 +5,9 @@
 //             #lessons               → choose a year
 //             #year-12               → choose a course
 //             #year-12/maths-advanced → choose a topic
-//             #year-12/maths-advanced/01-differential-calculus → last lesson used in that topic
+//             #year-12/maths-advanced/01-differential-calculus → Lessons or DRB
+//             #year-12/…/01-differential-calculus/lessons → last lesson used in that topic
+//             #year-12/…/01-differential-calculus/drb     → the topic's DRB (PDF)
 //             #year-12/…/1.01-…      → that lesson
 'use strict';
 const $ = id => document.getElementById(id);
@@ -91,17 +93,23 @@ function route(){
   const c = y && parts[1] && y.courses.find(x=>x.id===parts[1]);
   const t = c && parts[2] && c.topics.find(x=>x.id===parts[2]);
   if (parts.length >= 4 && byId(parts.join('/'))) return openLesson(byId(parts.join('/')));
-  if (t) return location.replace('#' + lastIn(t).id);
+  if (t && parts[3]==='lessons' && t.lessons.length) return location.replace('#' + lastIn(t).id);
+  if (t && parts[3]==='drb' && t.drb) return showDrb(y, c, t);
+  if (t) return showTopicChoice(y, c, t);
   if (c) return showTopics(y, c);
   if (y) return showCourses(y);
   if (parts[0]==='lessons') return showYears();
   if (parts[0]==='generators') return showGenerators();
   showStart();
 }
-function showHome(){ $('lesson').hidden = true; $('home').hidden = false; $('status').hidden = true; window.scrollTo(0,0) }
-function crumbs(items){
-  $('homeCrumbs').innerHTML = items.map(i => i.href ? `<a href="${i.href}">${esc(i.label)}</a>` : `<span>${esc(i.label)}</span>`).join('');
+function showHome(){ $('lesson').hidden = true; $('drb').hidden = true; $('home').hidden = false; $('status').hidden = true; window.scrollTo(0,0) }
+function crumbs(items, el){
+  $(el||'homeCrumbs').innerHTML = items.map(i => i.href ? `<a href="${i.href}">${esc(i.label)}</a>` : `<span>${esc(i.label)}</span>`).join('');
 }
+const topicLabel = t => (t.num ? t.num + ' · ' : '') + t.name;
+function fileSize(b){ return b >= 1048576 ? (b/1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b/1024)) + ' KB' }
+const drbUrl = d => d.path + '?v=' + d.v;
+const drbFileName = (c, t, d) => `DRB ${c.short||c.name} ${topicLabel(t).replace(' · ',' ')}${d.label ? ' (' + d.label + ')' : ''}.pdf`.replace(/[\\/:*?"<>|]/g,'');
 
 // ---------- home: start ----------
 let GENS = null;
@@ -193,10 +201,69 @@ function showTopics(y, c){
   if (!c.topics.length){ tiles.innerHTML = '<p class="empty-note">No lessons in this course yet.</p>'; return }
   tiles.replaceChildren(...c.topics.map(t=>{
     const a = document.createElement('a'); a.className='topic'; a.href = `#${y.id}/${c.id}/${t.id}`;
-    a.innerHTML = `<span class="num">${esc(t.num||'')}</span><span class="t">${esc(t.name)}<span class="count">${plural(t.lessons.length,'lesson')}</span></span>`;
+    const parts = []; if (t.lessons.length) parts.push(plural(t.lessons.length,'lesson')); if (t.drb) parts.push('DRB');
+    a.innerHTML = `<span class="num">${esc(t.num||'')}</span><span class="t">${esc(t.name)}<span class="count">${esc(parts.join(' · '))}</span></span>`;
     return a;
   }));
   document.title = `${c.short||c.name} – Dorey Desk`;
+}
+
+// ---------- home: Lessons or DRB, once a topic is chosen ----------
+function showTopicChoice(y, c, t){
+  showHome(); paint($('home'), c);
+  crumbs([{label:'Home',href:'#'},{label:'Lessons',href:'#lessons'},{label:y.name,href:'#'+y.id},
+          {label:c.short||c.name,href:`#${y.id}/${c.id}`},{label:topicLabel(t)}]);
+  $('prompt').textContent = t.name;
+  $('promptSub').textContent = `${c.short||c.name} · Topic ${t.num||''}`.replace(/ Topic $/,'');
+  const tiles = $('tiles'); tiles.className = 'tiles start';
+  const base = `#${y.id}/${c.id}/${t.id}`;
+  const tile = (on, href, cls, icon, big, small) => {
+    const a = document.createElement(on ? 'a' : 'div');
+    a.className = 'pick ' + cls + (on ? '' : ' empty');
+    if (on) a.href = href; else a.setAttribute('aria-disabled','true');
+    a.innerHTML = `<span class="pick-icon" aria-hidden="true">${icon}</span><span class="big">${big}</span><span class="small">${esc(small)}</span>`;
+    return a;
+  };
+  const n = t.lessons.length, d = t.drb;
+  tiles.replaceChildren(
+    tile(n>0, base+'/lessons', 'pick-lessons', '<i></i><i></i><i></i>', 'Lessons',
+         n ? `Teaching cards for OneNote · ${plural(n,'lesson')}` : 'Coming soon'),
+    tile(!!d, base+'/drb', 'pick-drb', '<i></i>', 'DRB',
+         d ? `Dorey's Resource Book · ${d.pages ? plural(d.pages,'page') + ' · ' : ''}PDF` : 'Coming soon')
+  );
+  document.title = `${t.name} – ${c.short||c.name} – Dorey Desk`;
+}
+
+// ---------- DRB: view and download the PDF ----------
+function showDrb(y, c, t){
+  const d = t.drb;
+  $('home').hidden = true; $('lesson').hidden = true; $('status').hidden = true; $('drb').hidden = false; window.scrollTo(0,0);
+  paint($('drb'), c);
+  crumbs([{label:'Home',href:'#'},{label:'Lessons',href:'#lessons'},{label:y.name,href:'#'+y.id},
+          {label:c.short||c.name,href:`#${y.id}/${c.id}`},{label:topicLabel(t),href:`#${y.id}/${c.id}/${t.id}`},{label:'DRB'}], 'drbCrumbs');
+  $('drbName').textContent = t.name;
+  $('drbMeta').textContent = [c.short||c.name, d.pages ? plural(d.pages,'page') : '', fileSize(d.bytes)].filter(Boolean).join(' · ');
+  const link = (dd, label, solid) => `<a class="btn${solid?' solid':''}" href="${esc(drbUrl(dd))}" download="${esc(drbFileName(c,t,dd))}">${esc(label)}</a>`;
+  $('drbTools').innerHTML =
+    link(d, 'Download PDF', true) +
+    d.extras.map(x => link(x, 'Download ' + x.label.toLowerCase())).join('') +
+    `<a class="btn" href="${esc(drbUrl(d))}" target="_blank" rel="noopener">Open in new tab</a>` +
+    (t.lessons.length ? `<a class="btn quiet" href="#${y.id}/${c.id}/${t.id}/lessons">Go to lessons</a>` : '');
+  // phones and browsers without a built-in PDF viewer get buttons instead of an embedded viewer
+  const embed = !matchMedia('(max-width:700px)').matches && navigator.pdfViewerEnabled !== false;
+  const view = $('drbView');
+  if (embed){
+    if (view.dataset.src !== d.path + d.v){
+      view.innerHTML = `<iframe src="${esc(drbUrl(d))}#view=FitH" title="${esc(t.name)} – Dorey's Resource Book"></iframe>`;
+      view.dataset.src = d.path + d.v;
+    }
+  } else {
+    view.dataset.src = '';
+    view.innerHTML = `<div class="drb-cover"><span class="pick-icon" aria-hidden="true"><i></i></span>
+      <p>${navigator.pdfViewerEnabled === false ? "This browser can't show PDFs inside the page." : 'The booklet is easier to read in your PDF viewer.'}
+      Use Download PDF or Open in new tab above.</p></div>`;
+  }
+  document.title = `DRB ${t.name} – Dorey Desk`;
 }
 
 // ---------- lesson view ----------
@@ -205,6 +272,7 @@ function buildSide(L){
   $('sideCrumbs').innerHTML = `<a href="#${L.y.id}">${esc(L.y.name)}</a><a href="#${L.y.id}/${L.c.id}">${esc(L.c.short||L.c.name)}</a>`;
   const topic = $('sideTopic'); topic.href = `#${L.y.id}/${L.c.id}`;
   topic.innerHTML = `${L.t.num ? esc(L.t.num)+' · ' : ''}${esc(L.t.name)}<small>Change topic</small>`;
+  const drb = $('sideDrb'); drb.hidden = !L.t.drb; drb.href = `#${L.y.id}/${L.c.id}/${L.t.id}/drb`;
   const list = $('sideList'); list.replaceChildren();
   L.t.lessons.forEach(l=>{
     const a = document.createElement('a'); a.className='page'; a.href = '#'+l.id;
@@ -237,7 +305,7 @@ function withCopy(card){
 }
 async function openLesson(L){
   current = L;
-  $('home').hidden = true; $('status').hidden = true; $('lesson').hidden = false;
+  $('home').hidden = true; $('drb').hidden = true; $('status').hidden = true; $('lesson').hidden = false;
   buildSide(L); remember(L);
   $('lname').textContent = `${L.code} – ${L.title}`; math($('lname'));
   document.title = `${L.code} ${L.title.replace(/\$/g,'')} – Dorey Desk`;

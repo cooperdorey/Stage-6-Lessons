@@ -19,8 +19,25 @@ lessons/
         1.01-the-derivative-of-exponential-functions.html
 ```
 
-The start page offers Lessons or Generators. Lessons steps through Year → Course → Topic, and a topic opens with its lessons
-down the side. All of it comes from the folders.
+The start page offers Lessons or Generators. Lessons steps through Year → Course → Topic, then
+asks **Lessons** or **DRB**. Lessons opens the topic's lessons down the side; DRB shows the
+topic's Dorey's Resource Book to read in the page, download as a PDF or open in a new tab.
+All of it comes from the folders.
+
+## Dorey's Resource Book (DRB)
+
+Put the booklet's PDF in its topic folder as `drb.pdf`:
+
+```
+lessons/year-12/maths-advanced/01-differential-calculus/drb.pdf
+```
+
+That's all: the next build picks it up, the DRB tile lights up (it says "Coming soon" until
+then), and lessons in that topic get a link to it in the side panel. To update the booklet,
+replace the file; the site makes browsers fetch the new copy.
+
+Other editions can sit beside it as `drb-<label>.pdf` (for example `drb-student.pdf` or
+`drb-print.pdf`) and show as extra download buttons.
 
 Course folders also set their short name, colour and order in `_meta.json`:
 

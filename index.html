@@ -25,6 +25,23 @@
   </main>
 </div>
 
+<!-- DRB: the topic's Dorey's Resource Book, to view or download -->
+<div id="drb" class="drb" hidden>
+  <header class="home-top">
+    <a class="wordmark" href="#">Dorey Desk</a>
+    <nav class="crumbs" id="drbCrumbs" aria-label="Where you are"></nav>
+  </header>
+  <div class="drb-bar">
+    <div class="drb-head">
+      <p class="drb-kicker">Dorey's Resource Book</p>
+      <h1 id="drbName"></h1>
+      <p id="drbMeta"></p>
+    </div>
+    <div class="tools" id="drbTools"></div>
+  </div>
+  <div class="drb-view" id="drbView"></div>
+</div>
+
 <!-- Lesson: topic's lessons down the side, cards on the right -->
 <div id="lesson" class="lesson" hidden>
   <aside class="side" id="side">
@@ -33,6 +50,7 @@
       <nav class="side-crumbs" id="sideCrumbs" aria-label="Where you are"></nav>
     </div>
     <a class="side-topic" id="sideTopic" href="#"></a>
+    <a class="side-drb" id="sideDrb" href="#" hidden>Dorey's Resource Book<small>View or download the PDF</small></a>
     <nav class="side-list" id="sideList" aria-label="Lessons in this topic"></nav>
   </aside>
   <main class="lesson-main">
