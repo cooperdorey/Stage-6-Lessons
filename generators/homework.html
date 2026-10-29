@@ -88,6 +88,8 @@ main{min-width:0}
 .pq .space.plain{background:none}
 .pfoot{position:absolute;left:60px;right:60px;bottom:22px;display:flex;justify-content:space-between;font-family:var(--ui);font-size:10.5px;color:#666}
 .pfoot .end{font-weight:700;color:#333}
+.cont{font-family:var(--ui);font-size:11.5px;color:#555;border-bottom:1px solid #bbb;padding-bottom:4px;margin-bottom:2px;display:flex;justify-content:space-between}
+.cont+.qhead{margin-top:6px}
 .akey .pq{padding-bottom:8px}
 .akey .lbl{font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6b7280;margin-bottom:2px}
 .akey .steps{font-size:14px;color:#14532D}
@@ -106,7 +108,7 @@ main{min-width:0}
 </header>
 <div class="intro">
  <h1>Weekly homework</h1>
- <p>Tick the lessons to draw from. The sheet is one A4 page set out like an HSC extended-response question: parts (a), (b), (c)… that build from short skills to multi-step questions, with marks in the margin and lined working space. Download it as a PDF, with a separate sample-answers PDF.</p>
+ <p>Tick the lessons to draw from. The sheet is two A4 pages, to print double-sided as one sheet, set out like an HSC extended-response question: parts (a), (b), (c)… that build from short skills to multi-step questions, with marks in the margin and lined working space. Download it as a PDF, with a separate sample-answers PDF.</p>
 </div>
 <div class="wrap">
  <aside>
@@ -116,8 +118,8 @@ main{min-width:0}
    <div><label for="cls">Class</label><input id="cls" type="text" placeholder="e.g. 12ADV"></div>
    <div><label for="week">Week</label><input id="week" type="text" placeholder="e.g. T4 W3"></div>
    <div><label for="due">Due</label><input id="due" type="date"></div>
-   <div><label for="marks">Marks</label><input id="marks" type="number" min="5" max="16" value="12"></div>
-   <div class="full hint">10 to 14 marks fit well on one page. The suggested time follows the HSC rate of 1.8 minutes a mark.</div>
+   <div><label for="marks">Marks</label><input id="marks" type="number" min="6" max="30" value="20"></div>
+   <div class="full hint">Two A4 pages: one sheet printed double-sided. 16 to 24 marks fit well. The suggested time follows the HSC rate of 1.8 minutes a mark.</div>
    <div class="full"><label for="seed">Seed</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New sheet" aria-label="New sheet">🎲</button></div></div>
   </div>
   <button class="primary" id="go">Generate</button>
@@ -170,7 +172,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  // ---- state from link ----
  const h=new URLSearchParams(location.hash.slice(1));
  $('seed').value=h.get('seed')||newSeed();
- $('marks').value=h.get('m')||12;
+ $('marks').value=h.get('m')||20;
  if(h.get('c'))$('cls').value=h.get('c');
  if(h.get('w'))$('week').value=h.get('w');
  if(h.get('ti'))$('title').value=h.get('ti');
@@ -232,19 +234,27 @@ document.addEventListener('DOMContentLoaded',()=>{
  const inl=s=>String(s).replace(/\$\$([\s\S]+?)\$\$/g,(m,x)=>`<div>$\\displaystyle ${x}$</div>`);
  const qHTML=(Q,i,space)=>`<div class="pq"><div class="n">${PART(i)}</div><div class="p">${inl(Q.q).replace(/\\frac/g,'\\dfrac')}</div><div class="mk">${Q.marks}</div>${space==null?'':`<div class="space" style="height:${space}px"></div>`}</div>`;
  const aHTML=(Q,i)=>`<div class="pq"><div class="n">${PART(i)}</div><div><div class="lbl">Sample answer</div><div class="steps">${Q.sol.map(s=>`<div>${inl(s)}</div>`).join('')}<div class="final">Answer: ${inl(Q.ans)}</div></div><div class="src">${esc(Q.lesson.topic.name)} · ${esc(Q.lesson.name)}</div></div><div class="mk">${Q.marks}</div></div>`;
- const foot=(info,p,n,label,end)=>`<div class="pfoot"><span>${esc(fullTitle(info))}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span><span${end?' class="end"':''}>${end?'End of homework':`Page ${p} of ${n}`}</span></div>`;
+ const foot=(info,p,n,label,end)=>`<div class="pfoot"><span>${esc(fullTitle(info))}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span><span${end?' class="end"':''}>${end==='turn'?'Please turn over':end?'End of homework':`Page ${p} of ${n}`}</span></div>`;
+ const contHTML=info=>`<div class="cont"><span>${esc(fullTitle(info))}: Question 1 (continued)</span><span>Name: ______________________</span></div>`;
 
  function measure(htmls,headHtml){const m=$('measure');
   m.innerHTML=`<div class="page">${headHtml||''}${htmls.join('')}</div>`;render(m);
   const page=m.firstChild,blocks=[...page.querySelectorAll(':scope>.pq')],hd=headHtml?blocks.length?blocks[0].offsetTop-PAD_TOP:page.scrollHeight:0;
   const hs=blocks.map(b=>b.getBoundingClientRect().height);m.innerHTML='';return{hs,hd}}
 
- // one page: the parts plus at least SPACE_MIN of working each; spare height shared by marks
- function packPage(set,info){const {hs,hd}=measure(set.map((Q,i)=>qHTML(Q,i)),headHTML(info));
-  const avail=PAGE_H-PAD_TOP-PAD_BOT-FOOT-hd-2,base=hs.reduce((s,x)=>s+x,0),need=base+set.reduce((s,Q)=>s+SPACE_MIN+18*Q.marks,0);
-  if(need>avail)return null;
-  const mk=set.reduce((s,Q)=>s+Q.marks,0),spare=avail-base;
-  return set.map((Q,i)=>({i,space:Math.max(SPACE_MIN,Math.floor(spare*Q.marks/mk)-4)}))}
+ // two pages (one sheet, double-sided). Parts never split across the sides; the split is chosen to
+ // leave the fuller side as roomy as possible, then each side's spare height is shared by marks.
+ function packPages(set,info){const {hs,hd}=measure(set.map((Q,i)=>qHTML(Q,i)),headHTML(info));
+  const {hd:hc}=measure([qHTML(set[0],0)],contHTML(info));
+  const avail1=PAGE_H-PAD_TOP-PAD_BOT-FOOT-hd-2,avail2=PAGE_H-PAD_TOP-PAD_BOT-FOOT-hc-2;
+  const need=i=>hs[i]+SPACE_MIN+18*set[i].marks,n=set.length,pre=[0];for(let i=0;i<n;i++)pre.push(pre[i]+need(i));
+  let k=-1,best=Infinity;
+  if(n===1){if(pre[1]<=avail1)k=1}
+  else for(let j=1;j<n;j++){const r=Math.max(pre[j]/avail1,(pre[n]-pre[j])/avail2);if(r<=1&&r<best){best=r;k=j}}
+  if(k<0)return null;
+  return [[0,k,avail1],[k,n,avail2]].filter(([a,b])=>b>a).map(([a,b,av])=>{const idx=[...Array(b-a)].map((_,j)=>a+j);
+   const base=idx.reduce((s,i)=>s+hs[i],0),mk=idx.reduce((s,i)=>s+set[i].marks,0),spare=av-base;
+   return idx.map(i=>({i,space:Math.max(SPACE_MIN,Math.floor(spare*set[i].marks/mk)-4)}))})}
 
  function answerPages(set){const {hs}=measure(set.map(aHTML)),avail=PAGE_H-PAD_TOP-PAD_BOT-FOOT-70;const pages=[];let cur=[],used=0;
   hs.forEach((h,i)=>{if(cur.length&&used+h>avail){pages.push(cur);cur=[];used=0}cur.push(i);used+=h+4});if(cur.length)pages.push(cur);return pages}
@@ -252,7 +262,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  let current=null;
  function generate(){
   const ids=selected();const seed=$('seed').value.trim()||newSeed();$('seed').value=seed;
-  const target=Math.max(5,Math.min(16,+$('marks').value||12));$('marks').value=target;
+  const target=Math.max(6,Math.min(30,+$('marks').value||20));$('marks').value=target;
   if(!ids.length){$('out').innerHTML='<div class="empty">Tick at least one lesson, then press Generate.</div>';$('meta').textContent='';$('tabs').hidden=true;$('pdfQ').disabled=$('pdfA').disabled=true;return}
   const p=new URLSearchParams({seed,m:target,l:ids.join(',')});
   [['c','cls'],['w','week'],['d','due']].forEach(([k,id])=>{if($(id).value.trim())p.set(k,$(id).value.trim())});
@@ -261,15 +271,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   const info={title:$('title').value.trim()||'Homework',cls:$('cls').value.trim(),week:$('week').value.trim(),due:$('due').value};
   const refresh=()=>{info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=[...new Set(set.map(Q=>Q.lesson.topic.name))].join(' · ')};
   refresh();
-  // keep to one page: drop the smallest part (or the last if all are equal) until it fits
-  let page=packPage(set,info);
-  while(!page&&set.length>1){let k=0;set.forEach((Q,i)=>{if(Q.marks<=set[k].marks)k=i});
-   const small=set.filter(Q=>Q.marks===set[k].marks).length>1?set.length-1:k;set=set.filter((_,i)=>i!==small);refresh();page=packPage(set,info)}
-  $('out').innerHTML=`<div class="pages"><div class="pagebox"><div class="page qpage">${headHTML(info)}${page.map(({i,space})=>qHTML(set[i],i,space)).join('')}${foot(info,1,1,'',true)}</div></div></div>`;
+  // keep to the two sides: drop the smallest part (the latest of equal ones) until it fits
+  let pages=packPages(set,info);
+  while(!pages&&set.length>1){const lo=Math.min(...set.map(Q=>Q.marks));let small=-1;set.forEach((Q,i)=>{if(Q.marks===lo)small=i});
+   set=set.filter((_,i)=>i!==small);refresh();pages=packPages(set,info)}
+  const np=pages.length;
+  $('out').innerHTML=`<div class="pages">${pages.map((pg,pi)=>`<div class="pagebox"><div class="page qpage">${pi===0?headHTML(info):contHTML(info)}${pg.map(({i,space})=>qHTML(set[i],i,space)).join('')}${foot(info,pi+1,np,'',pi===np-1?true:'turn')}</div></div>`).join('')}</div>`;
   const ap=answerPages(set);
   $('ans').innerHTML=`<div class="pages">${ap.map((pg,pi)=>`<div class="pagebox"><div class="page apage akey"><div class="phead"><div><h2>${esc(fullTitle(info))}: sample answers</h2><div class="sub">${esc(info.topics)}</div></div><div class="right">${info.cls?esc(info.cls)+'<br>':''}${info.due?'Due: '+esc(fmtDate(info.due))+'<br>':''}Question 1: ${info.total} marks</div></div>${pg.map(i=>aHTML(set[i],i)).join('')}${foot(info,pi+1,ap.length,'Answers')}</div></div>`).join('')}</div>`;
   render($('out'));render($('ans'));
-  const short=info.total<target?` (${target} asked: the closest fit on one page)`:'';
+  const short=info.total<target?` (${target} asked: the closest fit on two sides)`:'';
   const mix=[3,2,1].map(m=>[m,set.filter(Q=>Q.marks===m).length]).filter(x=>x[1]).map(([m,n])=>`${n}×${m}`).join(' + ');
   $('meta').textContent=`${set.length} parts (${mix}) · ${info.total} marks${short} · about ${suggested(info.total)} minutes · seed ${seed}`;
   $('tabs').hidden=false;show('q');$('pdfQ').disabled=$('pdfA').disabled=false;current={info,seed};

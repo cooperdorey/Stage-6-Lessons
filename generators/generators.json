@@ -20,7 +20,7 @@
  {
   "file": "homework.html",
   "name": "Homework generator",
-  "desc": "A weekly one-page homework sheet set out like an HSC extended-response question, parts building from short skills to multi-step. Downloads as a PDF with a separate sample-answers PDF.",
+  "desc": "A weekly homework sheet, two A4 pages to print double-sided, set out like an HSC extended-response question, parts building from short skills to multi-step. Downloads as a PDF with a separate sample-answers PDF.",
   "courses": [
    "12 ADV",
    "11 ADV"
