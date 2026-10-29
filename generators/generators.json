@@ -2,7 +2,7 @@
  {
   "file": "question-generator.html",
   "name": "Question generator",
-  "desc": "Random questions with worked solutions. Year 12 differential and integral calculus; Year 11 Working with functions and Exponential and logarithmic functions.",
+  "desc": "Random questions with worked solutions. All Year 11 Advanced topics, and Year 12 differential and integral calculus.",
   "courses": [
    "12 ADV",
    "11 ADV"

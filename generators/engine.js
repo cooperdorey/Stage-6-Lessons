@@ -703,6 +703,496 @@ function gLDerivEx(R){const v=R.int(0,2);
   sol:[`Quotient rule: $u = e^{x}$, $u' = e^{x}$; $\\;v = ${xp(n)}$, $v' = ${n===1?'1':term(n,xp(n-1),true)}$.`,`$$\\frac{dy}{dx} = \\frac{${xp(n)}e^{x} - ${n===1?'':term(n,xp(n-1),true)}e^{x}}{${xp(2*n)}} = \\frac{e^{x}(${lin(1,-n)})}{${xp(n+1)}}$$`],ans:`$\\dfrac{e^{x}(${lin(1,-n)})}{${xp(n+1)}}$`}}
 
 
+// ================= YEAR 11: SHARED HELPERS =================
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const units=(n,w)=>`${n} unit${n===1?'':'s'} ${w}`;
+const dp=(x,d=1)=>{const s=x.toFixed(d);return s==='-0'+(d?'.'+'0'.repeat(d):'')?s.slice(1):s};
+const DEG=d=>`${d}^{\\circ}`;
+// degrees and minutes, e.g. 48°05'
+function dms(x){const t=Math.round(x*60),d=Math.floor(t/60),m=t%60;return `${d}^{\\circ}${String(m).padStart(2,'0')}'`}
+const r2d=r=>r*180/Math.PI,d2r=d=>d*Math.PI/180;
+const sinD=d=>Math.sin(d2r(d)),cosD=d=>Math.cos(d2r(d)),tanD=d=>Math.tan(d2r(d));
+// decimal from an integer count of hundredths (or other denominator), without float noise
+const dec=(n,den=100)=>String(Number((n/den).toFixed(6)));
+// a fraction, plus its decimal when it terminates
+function frDec(f){f=Fr.of(f);let d=f.d;while(d%2===0)d/=2;while(d%5===0)d/=5;return d===1&&f.d!==1?`${f.tex()} = ${String(Number(f.val().toFixed(6)))}`:f.tex()}
+
+// ================= YEAR 11: GRAPH TRANSFORMATIONS =================
+const GT_BASE={
+ sq:{eq:'x^{2}',f:a=>a==='x'?'x^{2}':`(${a})^{2}`},
+ cube:{eq:'x^{3}',f:a=>a==='x'?'x^{3}':`(${a})^{3}`},
+ sqrt:{eq:'\\sqrt{x}',f:a=>`\\sqrt{${a}}`},
+ abs:{eq:'|x|',f:a=>`|${a}|`},
+ recip:{eq:'\\frac{1}{x}'}};
+// y = K·base(x − H) + C as tex
+function gtRule(base,K,H,C){K=Fr.of(K);C=Fr.of(C);const a=lin(1,-H);let body;
+ if(base==='recip'){const n=Math.abs(K.n),d=K.d,den=d===1?a:`${d}${H===0?'x':`(${a})`}`;body=(K.n<0?'-':'')+`\\frac{${n}}{${den}}`}
+ else{const k=K.n===K.d?'':K.n===-K.d?'-':K.tex();body=k+GT_BASE[base].f(a)}
+ return body+(C.isZero()?'':term(C,'',false))}
+// K f(arg) + C for a general f
+function fTex(K,arg,C){K=Fr.of(K);C=Fr.of(C);const k=K.n===K.d?'':K.n===-K.d?'-':K.tex();
+ const br=arg.includes('frac')?`\\left(${arg}\\right)`:`(${arg})`;return `${k}f${br}`+(C.isZero()?'':term(C,'',false))}
+const listWords=w=>w.length===1?w[0]:w.slice(0,-1).join(', then ')+' and then '+w[w.length-1];
+
+function gGtRule(R){const base=R.pick(['sq','cube','sqrt','abs','recip']);
+ const pool=[{t:'vd',k:R.pick([2,3,4,F(1,2)])},{t:'rx'},{t:'ht',h:R.nz(-4,4)},{t:'vt',c:R.nz(-5,5)}];
+ const ops=R.sample(pool,R.int(2,3));
+ let K=F(1),H=0,C=F(0);const lines=[],words=[];
+ ops.forEach(o=>{let w;
+  if(o.t==='vd'){K=K.mul(o.k);C=C.mul(o.k);w=`dilated vertically by a factor of $${Fr.of(o.k).tex()}$`}
+  else if(o.t==='rx'){K=K.neg();C=C.neg();w='reflected in the $x$-axis'}
+  else if(o.t==='ht'){H+=o.h;w=`translated ${units(Math.abs(o.h),o.h>0?'to the right':'to the left')}`}
+  else{C=C.add(o.c);w=`translated ${units(Math.abs(o.c),o.c>0?'up':'down')}`}
+  words.push(w);lines.push(`${cap(w)}: $y = ${gtRule(base,K,H,C)}$`)});
+ const fin=gtRule(base,K,H,C);
+ return{q:`The graph of $y = ${GT_BASE[base].eq}$ is ${listWords(words)}. Write down the equation of the new graph.`,marks:2,
+  sol:[...lines,'Each step changes the equation from the step before, so the order of the steps matters.'],ans:`$y = ${fin}$`}}
+
+function gGtDescribe(R){
+ if(R.next()<0.6){const K=Fr.of(R.pick([2,3,-1,-2,F(1,2),-3,4])),H=R.nz(-5,5),C=R.pick([0,R.nz(-6,6),R.nz(-6,6)]);
+  const steps=[`translate ${units(Math.abs(H),H>0?'to the right':'to the left')}`];
+  if(K.abs().val()!==1)steps.push(`dilate vertically by a factor of $${K.abs().tex()}$`);
+  if(K.n<0)steps.push('reflect in the $x$-axis');
+  if(C)steps.push(`translate ${units(Math.abs(C),C>0?'up':'down')}`);
+  const e=fTex(K,lin(1,-H),C),parts=[];
+  if(K.abs().val()!==1)parts.push('a vertical dilation');if(K.n<0)parts.push('a reflection in the $x$-axis');
+  return{q:`Describe a sequence of transformations that maps the graph of $y = f(x)$ onto the graph of $y = ${e}$.`,marks:2,
+   sol:[`$x$ is replaced by $${lin(1,-H)}$: a horizontal translation.`,`The function is multiplied by $${K.tex()}$: ${parts.join(' and ')}.`,
+    ...(C?[`$${C}$ is added at the end: a vertical translation, done last.`]:[]),`One sequence: ${steps.join(', then ')}.`],
+   ans:cap(steps.join(', then '))+'.'}}
+ const kind=R.pick(['bx','xb','negx']),C=R.pick([0,R.nz(-6,6)]),neg=R.next()<0.3;let arg,step,why;
+ if(kind==='bx'){const b=R.int(2,4);arg=`${b}x`;step=`dilate horizontally by a factor of $\\frac{1}{${b}}$`;why=`$x$ is replaced by $${b}x$: a horizontal dilation by a factor of $\\frac{1}{${b}}$.`}
+ else if(kind==='xb'){const b=R.int(2,4);arg=`\\frac{x}{${b}}`;step=`dilate horizontally by a factor of $${b}$`;why=`$x$ is replaced by $\\frac{x}{${b}}$: a horizontal dilation by a factor of $${b}$.`}
+ else{arg='-x';step='reflect in the $y$-axis';why='$x$ is replaced by $-x$: a reflection in the $y$-axis.'}
+ const steps=[step];if(neg)steps.push('reflect in the $x$-axis');if(C)steps.push(`translate ${units(Math.abs(C),C>0?'up':'down')}`);
+ return{q:`Describe a sequence of transformations that maps the graph of $y = f(x)$ onto the graph of $y = ${fTex(neg?-1:1,arg,C)}$.`,marks:2,
+  sol:[why,...(neg?['The function is multiplied by $-1$: a reflection in the $x$-axis.']:[]),...(C?[`$${C}$ is added at the end: a vertical translation.`]:[]),`One sequence: ${steps.join(', then ')}.`],
+  ans:cap(steps.join(', then '))+'.'}}
+
+function gGtPoint(R){const p=R.int(-5,5),q=R.int(-5,5);
+ if(R.next()<0.6){const K=Fr.of(R.pick([2,3,-1,-2,F(1,2)])),H=R.nz(-4,4),C=R.nz(-5,5),X=F(p+H),Y=K.mul(q).add(C);
+  return{q:`The point $${pt(p,q)}$ lies on the graph of $y = f(x)$. Find the coordinates of its image on the graph of $y = ${fTex(K,lin(1,-H),C)}$.`,marks:2,
+   sol:[`$x$ is replaced by $${lin(1,-H)}$, so the point moves ${units(Math.abs(H),H>0?'right':'left')}: $x = ${p} ${H>0?'+':'-'} ${Math.abs(H)} = ${X.tex()}$.`,
+    `Each $y$-value is multiplied by $${K.tex()}$, then $${C}$ is added: $y = ${K.tex()}\\times ${F(q).btex()} ${C>0?'+':'-'} ${Math.abs(C)} = ${Y.tex()}$.`],ans:`$${pt(X,Y)}$`}}
+ const kind=R.pick(['bx','xb','negx']),C=R.pick([0,R.nz(-4,4)]);let arg,X,why;
+ if(kind==='bx'){const b=R.int(2,4);arg=`${b}x`;X=F(p,b);why=`Horizontal dilation by a factor of $\\frac{1}{${b}}$: $x = ${p===0||p%b===0||gcd(p,b)===1&&p>0?'':`\\frac{${p}}{${b}} = `}${X.tex()}$.`}
+ else if(kind==='xb'){const b=R.int(2,4);arg=`\\frac{x}{${b}}`;X=F(p*b);why=`Horizontal dilation by a factor of $${b}$: $x = ${b}\\times ${F(p).btex()} = ${X.tex()}$.`}
+ else{arg='-x';X=F(-p);why=`Reflection in the $y$-axis: $x = ${X.tex()}$.`}
+ const Y=F(q+C);
+ return{q:`The point $${pt(p,q)}$ lies on the graph of $y = f(x)$. Find the coordinates of its image on the graph of $y = ${fTex(1,arg,C)}$.`,marks:2,
+  sol:[why,C?`Vertical translation by $${C}$: $y = ${q} ${C>0?'+':'-'} ${Math.abs(C)} = ${Y.tex()}$.`:`The $y$-value is unchanged: $y = ${q}$.`],ans:`$${pt(X,Y)}$`}}
+
+function gGtFeatures(R){
+ if(R.next()<0.6){const a=R.nz(-6,6),h=R.nz(-4,4),k=R.nz(-4,4),y0=F(-a,h).add(k),x0=F(h).sub(F(a,k));
+  return{q:`For the graph of $y = ${gtRule('recip',a,h,k)}$, state the equations of the asymptotes, the domain and range, and find the $x$- and $y$-intercepts.`,marks:3,
+   sol:[`This is $y = \\frac{1}{x}$ dilated, translated ${units(Math.abs(h),h>0?'right':'left')} and ${units(Math.abs(k),k>0?'up':'down')}.`,
+    `Asymptotes: $x = ${h}$ and $y = ${k}$.`,`Domain: all real $x$, $x \\ne ${h}$. Range: all real $y$, $y \\ne ${k}$.`,
+    `$y$-intercept ($x = 0$): $y = \\frac{${a}}{0 ${h>0?'-':'+'} ${Math.abs(h)}} ${k>0?'+':'-'} ${Math.abs(k)} = ${F(a,-h).tex()} ${k>0?'+':'-'} ${Math.abs(k)} = ${y0.tex()}$.`,
+    `$x$-intercept ($y = 0$): $\\frac{${a}}{${lin(1,-h)}} = ${-k}$, so $${lin(1,-h)} = ${F(a,-k).tex()}$ and $x = ${x0.tex()}$.`],
+   ans:`Asymptotes $x = ${h}$, $y = ${k}$; domain $x \\ne ${h}$, range $y \\ne ${k}$; intercepts $${pt(0,y0)}$ and $${pt(x0,0)}$`}}
+ const a=R.pick([1,2,3,-1,-2]),h=R.nz(-5,5),k=R.int(-5,5),up=a>0;
+ return{q:`State the domain, range and the coordinates of the endpoint of $y = ${gtRule('sqrt',a,h,k)}$.`,marks:2,
+  sol:[`The square root needs $${lin(1,-h)} \\ge 0$, so the domain is $x \\ge ${h}$.`,`$\\sqrt{${lin(1,-h)}} \\ge 0$, ${a<0?`so $${coefTex(a)}\\sqrt{${lin(1,-h)}} \\le 0$, `:''}so $y ${up?'\\ge':'\\le'} ${k}$.`,
+   `The endpoint is where $x = ${h}$: $${pt(h,k)}$.`],ans:`Domain $x \\ge ${h}$, range $y ${up?'\\ge':'\\le'} ${k}$, endpoint $${pt(h,k)}$`}}
+
+function gGtCircle(R){const p=R.int(-6,6),q=R.int(-6,6);
+ const sqx=(c,v)=>c===0?`${v}^{2}`:`(${poly([[1,v],[-c,'']])})^{2}`;
+ if(R.next()<0.6||(p===0&&q===0)){const r=R.int(1,8),D=-2*p,E=-2*q,Fc=p*p+q*q-r*r;
+  const eq=poly([[1,'x^{2}'],[1,'y^{2}'],[D,'x'],[E,'y'],[Fc,'']])+' = 0';
+  return{q:`Find the centre and radius of the circle $${eq}$.`,marks:3,
+   sol:[`Group and complete the square in $x$ and in $y$:`,`$$${poly([[1,'x^{2}'],[D,'x']])}${p?` + ${p*p}`:''} + ${poly([[1,'y^{2}'],[E,'y']])}${q?` + ${q*q}`:''} = ${-Fc}${p?` + ${p*p}`:''}${q?` + ${q*q}`:''}$$`,
+    `$$${sqx(p,'x')} + ${sqx(q,'y')} = ${r*r}$$`],ans:`Centre $${pt(p,q)}$, radius $${r}$`}}
+ let s,t;do{s=R.int(-6,6);t=R.int(-6,6)}while(s===p&&t===q);const r2=(s-p)**2+(t-q)**2;
+ return{q:`Find the equation of the circle with centre $${pt(p,q)}$ that passes through the point $${pt(s,t)}$.`,marks:2,
+  sol:[`$$r^{2} = (${s} - ${F(p).btex()})^{2} + (${t} - ${F(q).btex()})^{2} = ${r2}$$`,`$$${sqx(p,'x')} + ${sqx(q,'y')} = ${r2}$$`],ans:`$${sqx(p,'x')} + ${sqx(q,'y')} = ${r2}$`}}
+
+// ================= YEAR 11: TRIGONOMETRY AND MEASURE OF ANGLES =================
+const EXT={30:{sin:'\\frac{1}{2}',cos:'\\frac{\\sqrt{3}}{2}',tan:'\\frac{1}{\\sqrt{3}}',sec:'\\frac{2}{\\sqrt{3}}',cosec:'2',cot:'\\sqrt{3}'},
+ 45:{sin:'\\frac{1}{\\sqrt{2}}',cos:'\\frac{1}{\\sqrt{2}}',tan:'1',sec:'\\sqrt{2}',cosec:'\\sqrt{2}',cot:'1'},
+ 60:{sin:'\\frac{\\sqrt{3}}{2}',cos:'\\frac{1}{2}',tan:'\\sqrt{3}',sec:'2',cosec:'\\frac{2}{\\sqrt{3}}',cot:'\\frac{1}{\\sqrt{3}}'}};
+const AXV={sin:[0,1,0,-1],cos:[1,0,-1,0],tan:[0,null,0,null],sec:[1,null,-1,null],cosec:[null,1,null,-1],cot:[null,0,null,0]};
+const FAM={sin:'sin',cosec:'sin',cos:'cos',sec:'cos',tan:'tan',cot:'tan'};
+const POSQ={sin:[1,2],cos:[1,4],tan:[1,3]};
+const fnT=fn=>fn==='cosec'?'\\operatorname{cosec}':'\\'+fn;
+const angT=(d,rad)=>d===0?(rad?'0':DEG(0)):rad?piTex(F(d,180)):DEG(d);
+// sin 240°, cos(−135°), tan 5π/4
+function trigCall(fn,d,rad,pow){const a=angT(d,rad),p=pow?`^{${pow}}`:'';return d<0?`${fnT(fn)}${p}${a.includes('frac')?`\\left(${a}\\right)`:`(${a})`}`:`${fnT(fn)}${p} ${a}`}
+// exact value of a trig function at d degrees (any magnitude): {val, lines} or null if undefined
+function exactTrig(fn,d,rad){const t=((d%360)+360)%360,A=x=>angT(x,rad),call=trigCall(fn,d,rad),lines=[];
+ if(d!==t)lines.push(`$${A(d)}$ and $${A(t)}$ are the same ray, so they have the same trigonometric ratios.`);
+ if(t%90===0){const v=AXV[fn][t/90];if(v===null)return null;const P=[[1,0],[0,1],[-1,0],[0,-1]][t/90];
+  lines.push(`At $${A(t)}$ the point on the unit circle is $(${P[0]}, ${P[1]})$, so $${call} = ${v}$.`);return{val:String(v),lines}}
+ const Q=Math.floor(t/90)+1,rel=[t,180-t,t-180,360-t][Q-1],pos=POSQ[FAM[fn]].includes(Q),val=(pos?'':'-')+EXT[rel][fn];
+ lines.push(`$${A(t)}$ is in quadrant ${Q}, with related angle $${A(rel)}$. $${fnT(fn)}$ is ${pos?'positive':'negative'} in quadrant ${Q}.`);
+ lines.push(`$$${call} = ${pos?'':'-'}${fnT(fn)} ${A(rel)} = ${val}$$`);return{val,lines}}
+
+const TVAL={30:{sin:[F(1,2),1],cos:[F(1,2),3],tan:[F(1,3),3]},45:{sin:[F(1,2),2],cos:[F(1,2),2],tan:[F(1),1]},60:{sin:[F(1,2),3],cos:[F(1,2),1],tan:[F(1),3]}};
+const sqWrap=s=>s.includes('frac')?`\\left(${s}\\right)^{2}`:`(${s})^{2}`;
+function gTmExact(R){const A=()=>[R.pick(['sin','cos','tan']),R.pick([30,45,60])];const [f1,a1]=A();let [f2,a2]=A();
+ while(f1===f2&&a1===a2)[f2,a2]=A();
+ if(R.next()<0.5){const [c1,m1]=TVAL[a1][f1],[c2,m2]=TVAL[a2][f2],[k,r]=sqrtParts(m1*m2),val=surdVal(c1.mul(c2).mul(k),r);
+  const show=s=>s.includes('frac')?s:s;
+  return{q:`Find the exact value of $${fnT(f1)} ${DEG(a1)}\\,${fnT(f2)} ${DEG(a2)}$.`,marks:1,
+   sol:[`$$${fnT(f1)} ${DEG(a1)}\\,${fnT(f2)} ${DEG(a2)} = ${show(EXT[a1][f1])}\\times ${show(EXT[a2][f2])} = ${val}$$`],ans:`$${val}$`}}
+ const [c1,m1]=TVAL[a1][f1],[c2,m2]=TVAL[a2][f2],s1=c1.mul(c1).mul(m1),s2=c2.mul(c2).mul(m2),sgn=R.next()<0.5?1:-1,val=sgn>0?s1.add(s2):s1.sub(s2);
+ return{q:`Find the exact value of $${fnT(f1)}^{2}${DEG(a1)} ${sgn>0?'+':'-'} ${fnT(f2)}^{2}${DEG(a2)}$.`,marks:1,
+  sol:[`$$= ${sqWrap(EXT[a1][f1])} ${sgn>0?'+':'-'} ${sqWrap(EXT[a2][f2])} = ${s1.tex()} ${sgn>0?'+':'-'} ${s2.tex()} = ${val.tex()}$$`],ans:`$${val.tex()}$`}}
+
+function gTmAnyMag(R){const rad=R.next()<0.5;let fn,d,e;
+ do{fn=R.pick(['sin','cos','tan']);d=R.pick([30,45,60,90])*R.int(1,7)*R.pick([1,1,1,-1]);const t=((d%360)+360)%360;
+  if(d>360||d<-360||(d>0&&d<90)||(t%90===0&&R.next()<0.7))continue;e=exactTrig(fn,d,rad)}while(!e);
+ return{q:`Find the exact value of $${trigCall(fn,d,rad)}$.`,marks:1,sol:e.lines,ans:`$${e.val}$`}}
+
+function gTmRight(R){const v=R.int(0,3);
+ if(v===0){const D=R.int(15,80),th=R.int(15,70),h=D*tanD(th);
+  return{q:`From a point on level ground $${D}$ m from the base of a vertical tower, the angle of elevation of the top of the tower is $${DEG(th)}$. Find the height of the tower, correct to one decimal place.`,marks:2,
+   sol:[`$$\\tan ${DEG(th)} = \\frac{h}{${D}}$$`,`$$h = ${D}\\tan ${DEG(th)} \\approx ${dp(h)}\\text{ m}$$`],ans:`$${dp(h)}$ m`}}
+ if(v===1){const H=R.int(40,120),th=R.int(10,40),x=H/tanD(th);
+  return{q:`From the top of a vertical cliff $${H}$ m high, the angle of depression of a boat is $${DEG(th)}$. How far is the boat from the base of the cliff? Give your answer correct to one decimal place.`,marks:2,
+   sol:[`The angle of elevation of the cliff top from the boat is also $${DEG(th)}$ (alternate angles).`,`$$\\tan ${DEG(th)} = \\frac{${H}}{d}$$`,`$$d = \\frac{${H}}{\\tan ${DEG(th)}} \\approx ${dp(x)}\\text{ m}$$`],ans:`$${dp(x)}$ m`}}
+ if(v===2){const D=R.int(8,60),th=R.int(15,75),east=R.next()<0.5,val=east?D*sinD(th):D*cosD(th);
+  return{q:`A ship sails $${D}$ km on a bearing of $${String(th).padStart(3,'0')}^{\\circ}$T. How far ${east?'east':'north'} of its starting point is it? Give your answer correct to one decimal place.`,marks:2,
+   sol:[`The bearing is measured clockwise from north, so the angle between the path and north is $${DEG(th)}$.`,`$$${east?'\\text{east}':'\\text{north}'} = ${D}\\${east?'sin':'cos'} ${DEG(th)} \\approx ${dp(val)}\\text{ km}$$`],ans:`$${dp(val)}$ km`}}
+ const L=R.int(4,9),d=dp(R.int(10,L*10-15)/10),ang=r2d(Math.acos(+d/L)),ar=Math.round(ang);
+ return{q:`A $${L}$ m ladder leans against a vertical wall with its foot $${d}$ m from the base of the wall. Find the angle the ladder makes with the ground, correct to the nearest degree.`,marks:2,
+  sol:[`$$\\cos\\theta = \\frac{${d}}{${L}}$$`,`$$\\theta = \\cos^{-1}\\frac{${d}}{${L}} \\approx ${DEG(ar)}$$`],ans:`$${DEG(ar)}$`}}
+
+function gTmSine(R){
+ if(R.next()<0.55){let A,B;do{A=R.int(30,100);B=R.int(30,100)}while(A+B>160||A===B);const a=R.int(5,20),b=a*sinD(B)/sinD(A);
+  return{q:`In triangle $ABC$, $A = ${DEG(A)}$, $B = ${DEG(B)}$ and $a = ${a}$ cm. Find the length of $b$, correct to one decimal place.`,marks:2,
+   sol:[`Sine rule: $$\\frac{b}{\\sin B} = \\frac{a}{\\sin A}$$`,`$$b = \\frac{${a}\\sin ${DEG(B)}}{\\sin ${DEG(A)}} \\approx ${dp(b)}\\text{ cm}$$`],ans:`$${dp(b)}$ cm`}}
+ let A,a,b,s;do{A=R.int(35,110);a=R.int(8,20);b=R.int(4,a-2);s=b*sinD(A)/a}while(s>=0.98);
+ const B=r2d(Math.asin(s)),mins=R.next()<0.5,out=mins?dms(B):DEG(Math.round(B));
+ return{q:`In triangle $ABC$, $A = ${DEG(A)}$, $a = ${a}$ cm and $b = ${b}$ cm. Find the size of angle $B$, correct to the nearest ${mins?'minute':'degree'}.`,marks:2,
+  sol:[`$$\\frac{\\sin B}{${b}} = \\frac{\\sin ${DEG(A)}}{${a}}$$`,`$$\\sin B = \\frac{${b}\\sin ${DEG(A)}}{${a}} \\approx ${dp(s,4)}$$`,
+   `Since $b \\lt a$, angle $B$ is smaller than angle $A$, so it is acute: $B \\approx ${out}$.`],ans:`$B \\approx ${out}$`}}
+
+function gTmCosine(R){
+ if(R.next()<0.5){const a=R.int(4,20),b=R.int(4,20);let C;do{C=R.int(25,140)}while(C===90);const c=Math.sqrt(a*a+b*b-2*a*b*cosD(C));
+  return{q:`In triangle $ABC$, $a = ${a}$ cm, $b = ${b}$ cm and $C = ${DEG(C)}$. Find the length of $c$, correct to one decimal place.`,marks:2,
+   sol:[`$$c^{2} = a^{2} + b^{2} - 2ab\\cos C = ${a}^{2} + ${b}^{2} - 2(${a})(${b})\\cos ${DEG(C)}$$`,`$$c^{2} \\approx ${dp(c*c,2)}, \\quad c \\approx ${dp(c)}\\text{ cm}$$`],ans:`$${dp(c)}$ cm`}}
+ let a,b,c;do{a=R.int(4,15);b=R.int(4,15);c=R.int(3,20)}while(c>=a+b-1||c<=Math.abs(a-b)+1||a*a+b*b===c*c);
+ const k=F(a*a+b*b-c*c,2*a*b),C=r2d(Math.acos(k.val())),mins=R.next()<0.5,out=mins?dms(C):DEG(Math.round(C));
+ return{q:`A triangle has sides $a = ${a}$ cm, $b = ${b}$ cm and $c = ${c}$ cm. Find the size of angle $C$, correct to the nearest ${mins?'minute':'degree'}.`,marks:2,
+  sol:[`$$\\cos C = \\frac{a^{2} + b^{2} - c^{2}}{2ab} = \\frac{${a*a} + ${b*b} - ${c*c}}{${2*a*b}} = ${k.tex()}$$`,`$$C = \\cos^{-1}\\left(${k.tex()}\\right) \\approx ${out}$$`],ans:`$C \\approx ${out}$`}}
+
+function gTmArea(R){const a=R.int(4,20),b=R.int(4,20);
+ if(R.next()<0.55){const C=R.int(20,160),A=a*b*sinD(C)/2;
+  return{q:`Find the area of triangle $ABC$ with $a = ${a}$ cm, $b = ${b}$ cm and $C = ${DEG(C)}$, correct to one decimal place.`,marks:2,
+   sol:[`$$A = \\frac{1}{2}ab\\sin C = \\frac{1}{2}\\times ${a}\\times ${b}\\times\\sin ${DEG(C)} \\approx ${dp(A)}\\text{ cm}^{2}$$`],ans:`$${dp(A)}$ cm$^{2}$`}}
+ const C0=R.int(20,80),Ar=dp(a*b*sinD(C0)/2),s=2*(+Ar)/(a*b),C=Math.round(r2d(Math.asin(Math.min(1,s))));
+ return{q:`Triangle $ABC$ has area $${Ar}$ cm$^{2}$, with $a = ${a}$ cm and $b = ${b}$ cm. Given that $C$ is acute, find $C$, correct to the nearest degree.`,marks:2,
+  sol:[`$$${Ar} = \\frac{1}{2}\\times ${a}\\times ${b}\\times\\sin C$$`,`$$\\sin C = \\frac{${dp(2*(+Ar))}}{${a*b}} \\approx ${dp(s,4)}$$`,`$$C \\approx ${DEG(C)}$$`],ans:`$C \\approx ${DEG(C)}$`}}
+
+function gTmAmbig(R){let A,a,b,s,B1;
+ do{A=R.int(22,55);b=R.int(8,16);a=R.int(4,b-1);s=b*sinD(A)/a;B1=s<1?r2d(Math.asin(s)):0}while(s>=0.96||s<=0.3||B1<A+4||Math.abs(B1-Math.round(B1))>0.45);
+ const b1=Math.round(B1),b2=180-b1;
+ return{q:`In triangle $ABC$, $A = ${DEG(A)}$, $a = ${a}$ cm and $b = ${b}$ cm. Find the two possible sizes of angle $B$, correct to the nearest degree.`,marks:3,
+  sol:[`$$\\sin B = \\frac{b\\sin A}{a} = \\frac{${b}\\sin ${DEG(A)}}{${a}} \\approx ${dp(s,4)}$$`,`$\\sin B$ is positive in quadrants 1 and 2, so $B \\approx ${DEG(b1)}$ or $B \\approx 180^{\\circ} - ${DEG(b1)} = ${DEG(b2)}$.`,
+   `Both are possible, since $${DEG(A)} + ${DEG(b2)} \\lt 180^{\\circ}$ (this is the ambiguous case: $a \\lt b$).`],ans:`$B \\approx ${DEG(b1)}$ or $B \\approx ${DEG(b2)}$`}}
+
+function gTmRadians(R){const v=R.int(0,3);
+ if(v===0){const d=15*R.pick([1,2,3,4,5,6,8,9,10,12,14,15,16,18,20,21,22]);
+  return{q:`Convert $${DEG(d)}$ to radians, giving an exact answer.`,marks:1,sol:[`$$${DEG(d)} = ${d}\\times\\frac{\\pi}{180} = ${piTex(F(d,180))}$$`],ans:`$${piTex(F(d,180))}$`}}
+ if(v===1){const f=F(R.pick([1,2,3,4,5,7,8,9,10,11,13,15,16,20]),12),d=f.mul(180).val();
+  return{q:`Convert $${piTex(f)}$ radians to degrees.`,marks:1,sol:[`$$${piTex(f)}\\times\\frac{180^{\\circ}}{\\pi} = ${DEG(d)}$$`],ans:`$${DEG(d)}$`}}
+ if(v===2){const r=R.int(5,45)/10,d=r2d(r);
+  return{q:`Convert $${r}$ radians to degrees, correct to one decimal place.`,marks:1,sol:[`$$${r}\\times\\frac{180^{\\circ}}{\\pi} \\approx ${dp(d)}^{\\circ}$$`],ans:`$${dp(d)}^{\\circ}$`}}
+ const d=R.int(10,170),r=d2r(d);
+ return{q:`Convert $${DEG(d)}$ to radians, correct to two decimal places.`,marks:1,sol:[`$$${d}\\times\\frac{\\pi}{180} \\approx ${dp(r,2)}$$`],ans:`$${dp(r,2)}$`}}
+
+function gTmArc(R){const r=R.int(3,12),v=R.int(0,4);
+ const keys=['1/6','1/4','1/3','1/2','2/3','3/4','5/6'],th=R.pick(keys),[tn,td]=th.split('/').map(Number),T=F(tn,td),tt=piTex(T);
+ if(v===0){const l=piTex(T.mul(r));return{q:`Find the exact length of the arc of a circle of radius $${r}$ cm that subtends an angle of $${tt}$ at the centre.`,marks:1,
+  sol:[`$$\\ell = r\\theta = ${r}\\times ${tt} = ${l}\\text{ cm}$$`],ans:`$${l}$ cm`}}
+ if(v===1){const A=piTex(T.mul(r*r).div(2));return{q:`Find the exact area of a sector of a circle of radius $${r}$ cm with an angle of $${tt}$ at the centre.`,marks:1,
+  sol:[`$$A = \\frac{1}{2}r^{2}\\theta = \\frac{1}{2}\\times ${r*r}\\times ${tt} = ${A}\\text{ cm}^{2}$$`],ans:`$${A}$ cm$^{2}$`}}
+ if(v===2){const l=piTex(T.mul(r));return{q:`Find the exact perimeter of a sector of a circle of radius $${r}$ cm with an angle of $${tt}$ at the centre.`,marks:2,
+  sol:[`Arc length: $\\ell = ${r}\\times ${tt} = ${l}$.`,`$$P = 2r + \\ell = ${2*r} + ${l}\\text{ cm}$$`],ans:`$${2*r} + ${l}$ cm`}}
+ if(v===3){const A1=piTex(T.mul(r*r).div(2)),[c,m]=TRIG[th].sin,A2=surdVal(c.mul(r*r).div(2),m);
+  return{q:`A chord subtends an angle of $${tt}$ at the centre of a circle of radius $${r}$ cm. Find the exact area of the minor segment cut off by the chord.`,marks:3,
+   sol:[`Segment = sector $-$ triangle: $$A = \\frac{1}{2}r^{2}\\theta - \\frac{1}{2}r^{2}\\sin\\theta$$`,`$$= \\frac{1}{2}\\times ${r*r}\\times ${tt} - \\frac{1}{2}\\times ${r*r}\\times\\sin ${tt}$$`,`$$= ${A1} - ${A2}\\text{ cm}^{2}$$`],ans:`$${A1} - ${A2}$ cm$^{2}$`}}
+ const d=R.int(20,160),l=r*d2r(d);
+ return{q:`Find the length of the arc of a circle of radius $${r}$ cm that subtends an angle of $${DEG(d)}$ at the centre, correct to one decimal place.`,marks:2,
+  sol:[`Convert to radians: $${DEG(d)} = \\frac{${d}\\pi}{180}$.`,`$$\\ell = r\\theta = ${r}\\times\\frac{${d}\\pi}{180} \\approx ${dp(l)}\\text{ cm}$$`],ans:`$${dp(l)}$ cm`}}
+
+// ================= YEAR 11: TRIGONOMETRIC IDENTITIES AND EQUATIONS =================
+function gTiRecip(R){const rad=R.next()<0.5;let fn,d,e;
+ do{fn=R.pick(['sec','cosec','cot']);d=R.pick([30,45,60,90])*R.int(1,8)*(R.next()<0.15?-1:1);if(d>360)continue;
+  const t=((d%360)+360)%360;if(t%90===0&&R.next()<0.6)continue;e=exactTrig(fn,d,rad)}while(!e);
+ const base={sec:'cos',cosec:'sin',cot:'tan'}[fn],call=trigCall(fn,d,rad);
+ return{q:`Find the exact value of $${call}$.`,marks:1,sol:[`$${fnT(fn)}$ has the same sign as $${fnT(base)}$ in each quadrant, since $${call} = \\dfrac{1}{${trigCall(base,d,rad)}}$.`,...e.lines],ans:`$${e.val}$`}}
+
+function gTiComp(R){let a;do{a=R.int(10,80)}while(a===45);const b=90-a,v=R.int(0,4);
+ if(v===0){const [f,g]=R.pick([['sin','cos'],['cos','sin'],['tan','cot'],['sec','cosec']]);
+  return{q:`Simplify $\\dfrac{${fnT(f)} ${DEG(a)}}{${fnT(g)} ${DEG(b)}}$.`,marks:1,sol:[`$${fnT(g)} ${DEG(b)} = ${fnT(g)}(90^{\\circ} - ${DEG(a)}) = ${fnT(f)} ${DEG(a)}$`,`$$\\frac{${fnT(f)} ${DEG(a)}}{${fnT(f)} ${DEG(a)}} = 1$$`],ans:'$1$'}}
+ if(v===1){const f=R.pick(['sin','cos']),g=f==='sin'?'cos':'sin';
+  return{q:`Find the value of $${fnT(f)}^{2}${DEG(a)} + ${fnT(f)}^{2}${DEG(b)}$.`,marks:1,sol:[`$${fnT(f)} ${DEG(b)} = ${fnT(f)}(90^{\\circ} - ${DEG(a)}) = ${fnT(g)} ${DEG(a)}$`,`$$${fnT(f)}^{2}${DEG(a)} + ${fnT(g)}^{2}${DEG(a)} = 1$$`],ans:'$1$'}}
+ if(v===2){return{q:`Find the value of $\\tan ${DEG(a)}\\tan ${DEG(b)}$.`,marks:1,sol:[`$\\tan ${DEG(b)} = \\tan(90^{\\circ} - ${DEG(a)}) = \\cot ${DEG(a)}$`,`$$\\tan ${DEG(a)}\\cot ${DEG(a)} = 1$$`],ans:'$1$'}}
+ if(v===3){const [f,g]=R.pick([['sin','cos'],['cos','sin'],['tan','cot'],['sec','cosec'],['cosec','sec'],['cot','tan']]);
+  return{q:`Find the acute angle $\\theta$ for which $${fnT(f)}\\theta = ${fnT(g)} ${DEG(a)}$.`,marks:1,sol:[`$${fnT(g)} ${DEG(a)} = ${fnT(f)}(90^{\\circ} - ${DEG(a)}) = ${fnT(f)} ${DEG(b)}$`,`$$\\theta = ${DEG(b)}$$`],ans:`$\\theta = ${DEG(b)}$`}}
+ const [f,g]=R.pick([['cos','sin'],['sin','cos'],['cosec','sec'],['cot','tan']]);
+ return{q:`Simplify $${fnT(f)} ${DEG(a)} - ${fnT(g)} ${DEG(b)}$.`,marks:1,sol:[`$${fnT(g)} ${DEG(b)} = ${fnT(g)}(90^{\\circ} - ${DEG(a)}) = ${fnT(f)} ${DEG(a)}$`,`$$${fnT(f)} ${DEG(a)} - ${fnT(f)} ${DEG(a)} = 0$$`],ans:'$0$'}}
+
+const tSin=v=>`\\sin ${v}`,tCos=v=>`\\cos ${v}`,tTan=v=>`\\tan ${v}`,tSec=v=>`\\sec ${v}`,tCsc=v=>`\\operatorname{cosec} ${v}`,tCot=v=>`\\cot ${v}`;
+const tSq=(f,v)=>f(v).replace(' ',`^{2}`); // \sin^{2}θ
+function gTiSimplify(R){const v=R.pick(['\\theta','x','A']),k=R.int(2,6);
+ const T=[
+  {e:`${tSin(v)}\\,${tCot(v)}`,s:[`$$= ${tSin(v)}\\times\\frac{${tCos(v)}}{${tSin(v)}}$$`],a:tCos(v)},
+  {e:`${tCos(v)}\\,${tTan(v)}`,s:[`$$= ${tCos(v)}\\times\\frac{${tSin(v)}}{${tCos(v)}}$$`],a:tSin(v)},
+  {e:`\\frac{1 - ${tSq(tCos,v)}}{${tSin(v)}}`,s:[`$$= \\frac{${tSq(tSin,v)}}{${tSin(v)}}$$`],a:tSin(v)},
+  {e:`${tSq(tSec,v)} - ${tSq(tTan,v)}`,s:[`Since $1 + ${tSq(tTan,v)} = ${tSq(tSec,v)}$:`],a:'1'},
+  {e:`(1 + ${tSq(tTan,v)})${tSq(tCos,v)}`,s:[`$$= ${tSq(tSec,v)}\\,${tSq(tCos,v)} = \\frac{1}{${tSq(tCos,v)}}\\times ${tSq(tCos,v)}$$`],a:'1'},
+  {e:`\\frac{${tSec(v)}}{${tTan(v)}}`,s:[`$$= \\frac{1}{${tCos(v)}}\\times\\frac{${tCos(v)}}{${tSin(v)}} = \\frac{1}{${tSin(v)}}$$`],a:tCsc(v)},
+  {e:`\\frac{${tTan(v)}}{${tSec(v)}}`,s:[`$$= \\frac{${tSin(v)}}{${tCos(v)}}\\times ${tCos(v)}$$`],a:tSin(v)},
+  {e:`${tSq(tCos,v)}(${tSq(tSec,v)} - 1)`,s:[`$$= ${tSq(tCos,v)}\\,${tSq(tTan,v)} = ${tSq(tCos,v)}\\times\\frac{${tSq(tSin,v)}}{${tSq(tCos,v)}}$$`],a:tSq(tSin,v)},
+  {e:`\\frac{${tCot(v)}}{${tCsc(v)}}`,s:[`$$= \\frac{${tCos(v)}}{${tSin(v)}}\\times ${tSin(v)}$$`],a:tCos(v)},
+  {e:`${tSq(tSin,v)}(1 + ${tSq(tCot,v)})`,s:[`$$= ${tSq(tSin,v)}\\,${tSq(tCsc,v)} = ${tSq(tSin,v)}\\times\\frac{1}{${tSq(tSin,v)}}$$`],a:'1'},
+  {e:`\\frac{${tSq(tSin,v)}}{1 - ${tCos(v)}}`,s:[`$$= \\frac{1 - ${tSq(tCos,v)}}{1 - ${tCos(v)}} = \\frac{(1 - ${tCos(v)})(1 + ${tCos(v)})}{1 - ${tCos(v)}}$$`],a:`1 + ${tCos(v)}`},
+  {e:`${tSq(tCsc,v)} - ${tSq(tCot,v)}`,s:[`Since $1 + ${tSq(tCot,v)} = ${tSq(tCsc,v)}$:`],a:'1'},
+  {e:`\\frac{1}{1 + ${tSq(tTan,v)}}`,s:[`$$= \\frac{1}{${tSq(tSec,v)}}$$`],a:tSq(tCos,v)},
+  {e:`${k}${tSq(tSin,v)} + ${k}${tSq(tCos,v)}`,s:[`$$= ${k}(${tSq(tSin,v)} + ${tSq(tCos,v)}) = ${k}\\times 1$$`],a:String(k)},
+  {e:`${k} - ${k}${tSq(tSin,v)}`,s:[`$$= ${k}(1 - ${tSq(tSin,v)})$$`],a:`${k}${tSq(tCos,v)}`},
+  {e:`(1 - ${tSin(v)})(1 + ${tSin(v)})`,s:[`$$= 1 - ${tSq(tSin,v)}$$`],a:tSq(tCos,v)}];
+ const t=R.pick(T);return{q:`Simplify $${t.e}$.`,marks:2,sol:[...t.s,`$$= ${t.a}$$`],ans:`$${t.a}$`}}
+
+function gTiProve(R){const v=R.pick(['\\theta','x','A']);
+ const T=[
+  {l:`(${tSin(v)} + ${tCos(v)})^{2}`,r:`1 + 2${tSin(v)}\\,${tCos(v)}`,s:[`$= ${tSq(tSin,v)} + 2${tSin(v)}\\,${tCos(v)} + ${tSq(tCos,v)}$`,`$= 1 + 2${tSin(v)}\\,${tCos(v)}$, since $${tSq(tSin,v)} + ${tSq(tCos,v)} = 1$`]},
+  {l:`${tSec(v)} - ${tCos(v)}`,r:`${tSin(v)}\\,${tTan(v)}`,s:[`$= \\dfrac{1}{${tCos(v)}} - ${tCos(v)} = \\dfrac{1 - ${tSq(tCos,v)}}{${tCos(v)}}$`,`$= \\dfrac{${tSq(tSin,v)}}{${tCos(v)}} = ${tSin(v)}\\times\\dfrac{${tSin(v)}}{${tCos(v)}} = ${tSin(v)}\\,${tTan(v)}$`]},
+  {l:`${tTan(v)} + ${tCot(v)}`,r:`${tSec(v)}\\,${tCsc(v)}`,s:[`$= \\dfrac{${tSin(v)}}{${tCos(v)}} + \\dfrac{${tCos(v)}}{${tSin(v)}} = \\dfrac{${tSq(tSin,v)} + ${tSq(tCos,v)}}{${tSin(v)}\\,${tCos(v)}}$`,`$= \\dfrac{1}{${tSin(v)}\\,${tCos(v)}} = ${tSec(v)}\\,${tCsc(v)}$`]},
+  {l:`\\dfrac{1}{1 - ${tSin(v)}} + \\dfrac{1}{1 + ${tSin(v)}}`,r:`2${tSq(tSec,v)}`,s:[`$= \\dfrac{(1 + ${tSin(v)}) + (1 - ${tSin(v)})}{(1 - ${tSin(v)})(1 + ${tSin(v)})} = \\dfrac{2}{1 - ${tSq(tSin,v)}}$`,`$= \\dfrac{2}{${tSq(tCos,v)}} = 2${tSq(tSec,v)}$`]},
+  {l:`${tSin(v).replace(' ','^{4}')} - ${tCos(v).replace(' ','^{4}')}`,r:`${tSq(tSin,v)} - ${tSq(tCos,v)}`,s:[`$= (${tSq(tSin,v)} - ${tSq(tCos,v)})(${tSq(tSin,v)} + ${tSq(tCos,v)})$`,`$= (${tSq(tSin,v)} - ${tSq(tCos,v)})\\times 1 = ${tSq(tSin,v)} - ${tSq(tCos,v)}$`]},
+  {l:`(1 + ${tSq(tCot,v)})(1 - ${tSq(tCos,v)})`,r:`1`,s:[`$= ${tSq(tCsc,v)}\\,${tSq(tSin,v)}$`,`$= \\dfrac{1}{${tSq(tSin,v)}}\\times ${tSq(tSin,v)} = 1$`]},
+  {l:`\\dfrac{${tCos(v)}}{1 + ${tSin(v)}}`,r:`\\dfrac{1 - ${tSin(v)}}{${tCos(v)}}`,s:[`$= \\dfrac{${tCos(v)}(1 - ${tSin(v)})}{(1 + ${tSin(v)})(1 - ${tSin(v)})} = \\dfrac{${tCos(v)}(1 - ${tSin(v)})}{1 - ${tSq(tSin,v)}}$`,`$= \\dfrac{${tCos(v)}(1 - ${tSin(v)})}{${tSq(tCos,v)}} = \\dfrac{1 - ${tSin(v)}}{${tCos(v)}}$`]},
+  {l:`${tSq(tSec,v)} + ${tSq(tCsc,v)}`,r:`${tSq(tSec,v)}\\,${tSq(tCsc,v)}`,s:[`$= \\dfrac{1}{${tSq(tCos,v)}} + \\dfrac{1}{${tSq(tSin,v)}} = \\dfrac{${tSq(tSin,v)} + ${tSq(tCos,v)}}{${tSq(tSin,v)}\\,${tSq(tCos,v)}}$`,`$= \\dfrac{1}{${tSq(tSin,v)}\\,${tSq(tCos,v)}} = ${tSq(tSec,v)}\\,${tSq(tCsc,v)}$`]},
+  {l:`${tSq(tTan,v)} - ${tSq(tSin,v)}`,r:`${tSq(tTan,v)}\\,${tSq(tSin,v)}`,s:[`$= \\dfrac{${tSq(tSin,v)}}{${tSq(tCos,v)}} - ${tSq(tSin,v)} = ${tSq(tSin,v)}\\left(\\dfrac{1}{${tSq(tCos,v)}} - 1\\right)$`,`$= ${tSq(tSin,v)}(${tSq(tSec,v)} - 1) = ${tSq(tSin,v)}\\,${tSq(tTan,v)}$`]},
+  {l:`\\dfrac{1 + ${tSq(tTan,v)}}{1 + ${tSq(tCot,v)}}`,r:`${tSq(tTan,v)}`,s:[`$= \\dfrac{${tSq(tSec,v)}}{${tSq(tCsc,v)}} = \\dfrac{1}{${tSq(tCos,v)}}\\times ${tSq(tSin,v)}$`,`$= \\dfrac{${tSq(tSin,v)}}{${tSq(tCos,v)}} = ${tSq(tTan,v)}$`]}];
+ const t=R.pick(T);return{q:`Prove that $${t.l} = ${t.r}$.`,marks:2,sol:[`$\\text{LHS} = ${t.l}$`,...t.s,'$= \\text{RHS}$'],ans:`Shown: LHS $= ${t.r}$`}}
+
+// solve f(m·x) = v for 0 ≤ x ≤ 360°/m, by checking every multiple of 7.5°
+const TFN={sin:sinD,cos:cosD,tan:tanD};
+function trigRoots(fn,v,m){const out=[];for(let j=0;j*7.5<=360/m+1e-9;j++){const x=j*7.5,a=m*x;if(fn==='tan'&&Math.abs(cosD(a))<1e-9)continue;
+ if(Math.abs(TFN[fn](a)-v)<1e-9)out.push(j)}return out}
+const jTex=(j,rad)=>j===0?(rad?'0':DEG(0)):rad?piTex(F(j,24)):DEG(j%2===0?String(j*7.5):(j*7.5).toFixed(1));
+const domT=(m,rad)=>rad?`0 \\le x \\le ${m===1?'2\\pi':'\\pi'}`:`0^{\\circ} \\le x \\le ${m===1?'360':'180'}^{\\circ}`;
+const TEQ={sin:[[0.5,'\\frac{1}{2}',30,'2F = 1'],[-0.5,'-\\frac{1}{2}',30,'2F + 1 = 0'],[Math.sqrt(3)/2,'\\frac{\\sqrt{3}}{2}',60,'2F = \\sqrt{3}'],[-Math.sqrt(3)/2,'-\\frac{\\sqrt{3}}{2}',60,'2F + \\sqrt{3} = 0'],
+  [Math.SQRT1_2,'\\frac{1}{\\sqrt{2}}',45,'\\sqrt{2}F = 1'],[-Math.SQRT1_2,'-\\frac{1}{\\sqrt{2}}',45,'\\sqrt{2}F + 1 = 0'],[1,'1',null,'2F - 1 = F'],[-1,'-1',null,'F + 3 = 2'],[0,'0',null,'4F = 0']],
+ tan:[[1,'1',45,'F - 1 = 0'],[-1,'-1',45,'F + 1 = 0'],[Math.sqrt(3),'\\sqrt{3}',60,'F = \\sqrt{3}'],[-Math.sqrt(3),'-\\sqrt{3}',60,'F + \\sqrt{3} = 0'],
+  [1/Math.sqrt(3),'\\frac{1}{\\sqrt{3}}',30,'\\sqrt{3}F = 1'],[-1/Math.sqrt(3),'-\\frac{1}{\\sqrt{3}}',30,'\\sqrt{3}F + 1 = 0']]};
+TEQ.cos=TEQ.sin;
+function gTiSolve(R){const fn=R.pick(['sin','cos','tan']),rad=R.next()<0.5,m=R.next()<0.3?2:1,[val,vt,rel,eqT]=R.pick(TEQ[fn]);
+ const arg=m===2?'2x':'x',Fx=`\\${fn} ${arg}`,js=trigRoots(fn,val,m),lines=[`$$${Fx} = ${vt}$$`];
+ if(m===2)lines.push(`Since $${domT(m,rad)}$, $0 \\le 2x \\le ${rad?'2\\pi':'360^{\\circ}'}$.`);
+ if(rel!==null){const pos=val>0,Qs=pos?POSQ[fn]:[1,2,3,4].filter(q=>!POSQ[fn].includes(q));
+  lines.push(`The related angle is $${angT(rel,rad)}$, and $\\${fn}$ is ${pos?'positive':'negative'} in quadrants ${Qs[0]} and ${Qs[1]}.`)}
+ else lines.push(`From the unit circle (or the graph of $y = \\${fn} x$), $\\${fn}\\theta = ${vt}$ at these angles:`);
+ if(m===2)lines.push(`$$2x = ${js.map(j=>jTex(2*j,rad)).join(',\\ ')}$$`);
+ const xs=js.map(j=>jTex(j,rad)).join(',\\ ');lines.push(`$$x = ${xs}$$`);
+ return{q:`Solve $${eqT.replace(/F/g,Fx)}$ for $${domT(m,rad)}$.`,marks:2,sol:lines,ans:`$x = ${xs}$`}}
+
+function gTiQuad(R){const fn=R.pick(['sin','cos']),rad=R.next()<0.5,pool=[F(1),F(-1),F(1,2),F(-1,2),F(0),F(2),F(-2),F(3,2)];
+ let r1,r2;do{[r1,r2]=R.sample(pool,2)}while(Math.abs(r1.val())>1&&Math.abs(r2.val())>1);
+ const A=r1.d*r2.d,B=-(r1.d*r2.n+r2.d*r1.n),C=r1.n*r2.n,Fx=`\\${fn} x`,Fx2=`\\${fn}^{2}x`;
+ const eqF=poly([[A,Fx2],[B,Fx],[C,'']])+' = 0';
+ const pyth=R.next()<0.4,other=fn==='sin'?'cos':'sin';
+ const eqQ=pyth?poly([[A,`\\${other}^{2}x`],[-B,Fx],[-(A+C),'']])+' = 0':eqF;
+ const fac=r=>r.n===0?Fx:`${r.d===1?'':r.d}${Fx} ${r.n>0?'-':'+'} ${Math.abs(r.n)}`;
+ const [u,w]=r1.n===0?[r1,r2]:[r2,r1];const facT=u.n===0?`${Fx}(${fac(w)})`:`(${fac(u)})(${fac(w)})`;
+ const lines=[];if(pyth)lines.push(`Use $\\${other}^{2}x = 1 - \\${fn}^{2}x$ and rearrange:`,`$$${eqF}$$`);
+ lines.push(`$$${facT} = 0$$`);const all=[];
+ [u,w].forEach(r=>{if(Math.abs(r.val())>1){lines.push(`$${Fx} = ${r.tex()}$ has no solutions, since $-1 \\le ${Fx} \\le 1$.`);return}
+  const js=trigRoots(fn,r.val(),1);all.push(...js);lines.push(`$${Fx} = ${r.tex()}$: $x = ${js.map(j=>jTex(j,rad)).join(',\\ ')}$`)});
+ const xs=[...new Set(all)].sort((a,b)=>a-b).map(j=>jTex(j,rad)).join(',\\ ');
+ return{q:`Solve $${eqQ}$ for $${domT(1,rad)}$.`,marks:3,sol:lines,ans:`$x = ${xs}$`}}
+
+// ================= YEAR 11: INTRODUCTION TO DIFFERENTIATION =================
+const tVar=s=>s.replace(/x/g,'t');
+function gDcAvg(R){let a=R.int(-3,3),b=R.int(-3,4);while(b<=a)b=R.int(a+1,a+4);
+ if(R.next()<0.5){const cs=[R.int(-5,5),R.int(-5,5),R.nz(-3,3),R.pick([0,0,R.nz(-2,2)])],fb=pEval(cs,b),fa=pEval(cs,a),m=fb.sub(fa).div(b-a);
+  return{q:`Find the average rate of change of $f(x) = ${pTex(cs)}$ over the interval $[${a}, ${b}]$.`,marks:2,
+   sol:[`$f(${b}) = ${fb.tex()}$ and $f(${a}) = ${fa.tex()}$`,`$$\\frac{f(${b}) - f(${a})}{${b} - ${F(a).btex()}} = \\frac{${fb.tex()} - ${fa.btex()}}{${b-a}} = ${m.tex()}$$`],ans:`$${m.tex()}$`}}
+ const k=R.int(1,4),u=R.int(0,10),t1=R.int(0,5),t2=t1+R.int(1,5),d=t=>k*t*t+u*t,sp=F(d(t2)-d(t1),t2-t1),cs=[0,u,k];
+ return{q:`A car travels $d$ metres in $t$ seconds, where $d = ${tVar(pTex(cs))}$. Find its average speed between $t = ${t1}$ and $t = ${t2}$.`,marks:2,
+  sol:[`At $t = ${t2}$: $d = ${d(t2)}$. At $t = ${t1}$: $d = ${d(t1)}$.`,`$$\\text{average speed} = \\frac{${d(t2)} - ${d(t1)}}{${t2} - ${t1}} = ${sp.tex()}\\text{ m/s}$$`],ans:`$${sp.tex()}$ m/s`}}
+
+function gDcFirst(R){const a=R.nz(-4,4),b=R.int(-6,6),c=R.int(-6,6),cs=[c,b,a];
+ return{q:`Use first principles to find the derivative of $f(x) = ${pTex(cs)}$.`,marks:3,
+  sol:[`$$f(x + h) = ${subSym(cs,'x + h')} = ${poly([[a,'x^{2}'],[2*a,'xh'],[a,'h^{2}'],[b,'x'],[b,'h'],[c,'']])}$$`,
+   `$$f(x + h) - f(x) = ${poly([[2*a,'xh'],[a,'h^{2}'],[b,'h']])}$$`,
+   `$$f'(x) = \\lim_{h \\to 0}\\frac{f(x + h) - f(x)}{h} = \\lim_{h \\to 0}\\left(${poly([[2*a,'x'],[a,'h'],[b,'']])}\\right) = ${lin(2*a,b)}$$`],ans:`$f'(x) = ${lin(2*a,b)}$`}}
+
+function gDcChain(R){const v=R.int(0,3);
+ if(v===0){let a,b;do{a=R.nz(-5,5);b=R.nz(-6,6)}while(gcd(a,b)!==1||(a<0&&b<0));const n=R.int(2,6),L=lin(a,b);
+  return{q:`Differentiate $y = (${L})^{${n}}$.`,marks:1,sol:[`Chain rule: bring down the power, reduce it by one, then multiply by the derivative of the inside, $${a}$.`,`$$\\frac{dy}{dx} = ${n}(${L})${n-1===1?'':`^{${n-1}}`}\\times ${F(a).btex()} = ${n*a}(${L})${n-1===1?'':`^{${n-1}}`}$$`],ans:`$${n*a}(${L})${n-1===1?'':`^{${n-1}}`}$`}}
+ if(v===1){const k=R.nz(-6,6),n=R.int(2,5),in2=poly([[1,'x^{2}'],[k,'']]);
+  return{q:`Differentiate $y = (${in2})^{${n}}$.`,marks:2,sol:[`$$\\frac{dy}{dx} = ${n}(${in2})${n-1===1?'':`^{${n-1}}`}\\times 2x = ${2*n}x(${in2})${n-1===1?'':`^{${n-1}}`}$$`],ans:`$${2*n}x(${in2})${n-1===1?'':`^{${n-1}}`}$`}}
+ if(v===2){const a=R.int(1,6),b=R.nz(-6,6),L=lin(a,b),num=F(a,2);
+  return{q:`Differentiate $y = \\sqrt{${L}}$.`,marks:2,sol:[`$y = (${L})^{\\frac{1}{2}}$`,`$$\\frac{dy}{dx} = \\frac{1}{2}(${L})^{-\\frac{1}{2}}\\times ${a} = \\frac{${a}}{2\\sqrt{${L}}}$$`],
+   ans:num.isInt()?`$\\dfrac{${a/2}}{\\sqrt{${L}}}$`:`$\\dfrac{${a}}{2\\sqrt{${L}}}$`}}
+ const k=R.int(1,6),a=R.int(1,5),b=R.nz(-6,6),n=R.int(1,3),L=lin(a,b),c=-k*n*a;
+ return{q:`Differentiate $y = \\dfrac{${k}}{(${L})^{${n===1?'':n}}}$.`.replace('^{}',''),marks:2,
+  sol:[`$y = ${k}(${L})^{-${n}}$`,`$$\\frac{dy}{dx} = ${k}\\times(-${n})(${L})^{-${n+1}}\\times ${a} = \\frac{${c}}{(${L})^{${n+1}}}$$`],ans:`$-\\dfrac{${-c}}{(${L})^{${n+1}}}$`}}
+
+function gDcProduct(R){let a,b;do{a=R.nz(-4,4);b=R.nz(-5,5)}while(gcd(a,b)!==1||(a<0&&b<0));const m=R.int(1,2),n=R.int(2,4),L=lin(a,b);
+ const P=a*(m+n),Q=m*b,g=gcd(P,Q)*(P<0?-1:1),inner=lin(P/g,Q/g),xm=xp(m-1),pw=n-1===1?'':`^{${n-1}}`;
+ const res=`${coefTex(g)}${xm}(${L})${pw}(${inner})`;
+ return{q:`Differentiate $y = ${xp(m)}(${L})^{${n}}$, giving your answer in factorised form.`,marks:2,
+  sol:[`Product rule: $u = ${xp(m)}$, $u' = ${m===1?'1':'2x'}$; $v = (${L})^{${n}}$, $v' = ${n*a}(${L})${pw}$.`,
+   `$$\\frac{dy}{dx} = ${m===1?'':'2x'}(${L})^{${n}} ${n*a<0?'-':'+'} ${Math.abs(n*a)}${xp(m)}(${L})${pw}$$`,
+   `$$= ${xm}(${L})${pw}\\left[${m===1?'':'2'}(${L}) ${n*a<0?'-':'+'} ${Math.abs(n*a)}x\\right] = ${res}$$`],ans:`$${res}$`}}
+
+function gDcQuotient(R){
+ if(R.next()<0.6){let a,b,c,d;do{a=R.nz(-5,5);b=R.int(-6,6);c=R.int(1,4);d=R.nz(-6,6)}while(a*d-b*c===0);const N=a*d-b*c,u=lin(a,b),w=lin(c,d);
+  return{q:`Differentiate $y = \\dfrac{${u}}{${w}}$.`,marks:2,sol:[`Quotient rule: $u = ${u}$, $u' = ${a}$; $v = ${w}$, $v' = ${c}$.`,
+   `$$\\frac{dy}{dx} = \\frac{${a}(${w}) - ${c}(${u})}{(${w})^{2}} = \\frac{${N}}{(${w})^{2}}$$`],ans:`$${N<0?'-':''}\\dfrac{${Math.abs(N)}}{(${w})^{2}}$`}}
+ const k=R.nz(-6,6),w=lin(1,k);
+ return{q:`Differentiate $y = \\dfrac{x^{2}}{${w}}$, giving your answer in factorised form.`,marks:2,sol:[`Quotient rule: $u = x^{2}$, $u' = 2x$; $v = ${w}$, $v' = 1$.`,
+  `$$\\frac{dy}{dx} = \\frac{2x(${w}) - x^{2}}{(${w})^{2}} = \\frac{${poly([[1,'x^{2}'],[2*k,'x']])}}{(${w})^{2}} = \\frac{x(${lin(1,2*k)})}{(${w})^{2}}$$`],ans:`$\\dfrac{x(${lin(1,2*k)})}{(${w})^{2}}$`}}
+
+function gDcNormal(R){let cs,p,m;do{cs=[R.int(-5,5),R.int(-5,5),R.nz(-3,3),R.pick([0,R.nz(-1,1)])];p=R.int(-2,2);m=pEval(pDer(cs),p)}while(m.isZero());
+ const y0=pEval(cs,p),mn=F(-1).div(m),c=y0.sub(mn.mul(p)),G=genTex(toGeneral(mn,c)),d=pDer(cs);
+ return{q:`Find the equation of the normal to $y = ${pTex(cs)}$ at the point where $x = ${p}$. Give your answer in general form.`,marks:3,
+  sol:[`$\\dfrac{dy}{dx} = ${pTex(d)}$, so the tangent has gradient $${m.tex()}$ and the normal has gradient $${mn.tex()}$.`,`At $x = ${p}$: $y = ${y0.tex()}$.`,
+   `$$y - ${y0.btex()} = ${mn.btex()}\\left(x - ${F(p).btex()}\\right)$$`,`$$${G}$$`],ans:`$${G}$`}}
+
+function gDcGradPt(R){
+ if(R.next()<0.5){const a=R.nz(-3,3),b=R.int(-6,6),c=R.int(-6,6),x0=R.int(-4,4),m=2*a*x0+b,cs=[c,b,a],y0=pEval(cs,x0);
+  return{q:`Find the coordinates of the point on $y = ${pTex(cs)}$ where the gradient of the tangent is $${m}$.`,marks:2,
+   sol:[`$\\dfrac{dy}{dx} = ${lin(2*a,b)}$`,`$${lin(2*a,b)} = ${m}$, so $x = ${x0}$ and $y = ${y0.tex()}$.`],ans:`$${pt(x0,y0)}$`}}
+ let a,r1,r2;do{a=R.pick([1,-1,2,-2]);r1=R.int(-3,4);r2=R.int(-3,4)}while(r1>=r2||(Math.abs(a)%2===1&&(r1+r2)%2!==0));
+ const m=R.int(-8,8),B=-3*a*(r1+r2)/2,C=3*a*r1*r2+m,D=R.int(-5,5),cs=[D,C,B,a],dl=pDer(cs),y1=pEval(cs,r1),y2=pEval(cs,r2),par=R.next()<0.5;
+ return{q:par?`Find the coordinates of the points on $y = ${pTex(cs)}$ where the tangent is parallel to the line $y = ${lin(m,R.int(1,9))}$.`:`Find the coordinates of the points on $y = ${pTex(cs)}$ where the gradient of the tangent is $${m}$.`,marks:3,
+  sol:[`$\\dfrac{dy}{dx} = ${pTex(dl)}$${par?`, and the line has gradient $${m}$.`:'.'}`,`$$${pTex(dl)} = ${m} \\;\\Rightarrow\\; ${pTex([F(C-m),F(2*B),F(3*a)])} = 0$$`,
+   `$$${coefTex(3*a)}${factor(r1)}${factor(r2)} = 0, \\quad x = ${r1} \\text{ or } x = ${r2}$$`,`Points: $${pt(r1,y1)}$ and $${pt(r2,y2)}$.`],ans:`$${pt(r1,y1)}$ and $${pt(r2,y2)}$`}}
+
+function gDcIncline(R){
+ if(R.next()<0.55){let cs,p,m;do{cs=[R.int(-5,5),R.int(-5,5),R.nz(-3,3)];p=R.int(-3,3);m=pEval(pDer(cs),p)}while(m.isZero());
+  const raw=r2d(Math.atan(m.val())),th=Math.round(m.val()>0?raw:180+raw);
+  return{q:`Find the angle of inclination of the tangent to $y = ${pTex(cs)}$ at the point where $x = ${p}$, correct to the nearest degree.`,marks:2,
+   sol:[`$\\dfrac{dy}{dx} = ${lin(2*cs[2],cs[1])}$, so at $x = ${p}$, $m = ${m.tex()}$.`,`$$\\tan\\theta = ${m.tex()}$$`,
+    m.val()>0?`$$\\theta = \\tan^{-1}${m.tex()} \\approx ${DEG(th)}$$`:`The gradient is negative, so $\\theta$ is obtuse: $\\theta = 180^{\\circ} - \\tan^{-1}${-m.val()} \\approx ${DEG(th)}$.`],ans:`$${DEG(th)}$`}}
+ const a=R.nz(-3,3),x0=R.int(-4,4),up=R.next()<0.5,m=up?1:-1,b=m-2*a*x0,c=R.int(-6,6),cs=[c,b,a],y0=pEval(cs,x0);
+ return{q:`Find the point on the curve $y = ${pTex(cs)}$ where the tangent makes an angle of $${up?'45':'135'}^{\\circ}$ with the positive direction of the $x$-axis.`,marks:2,
+  sol:[`$m = \\tan ${up?'45':'135'}^{\\circ} = ${m}$`,`$\\dfrac{dy}{dx} = ${lin(2*a,b)} = ${m}$, so $x = ${x0}$ and $y = ${y0.tex()}$.`],ans:`$${pt(x0,y0)}$`}}
+
+function cubicWithTurns(R){let a,p,q;do{a=R.pick([1,-1,2,-2]);p=R.int(-3,3);q=R.int(-2,4)}while(p>=q||(Math.abs(a)%2===1&&(p+q)%2!==0));
+ const D=R.int(-6,6);return{a,p,q,cs:[D,3*a*p*q,-3*a*(p+q)/2,a]}}
+function gDcStat(R){const {a,p,q,cs}=cubicWithTurns(R),d=pDer(cs),fd=x=>pEval(d,x),fp=pEval(cs,p),fq=pEval(cs,q),mid=F(p+q,2),dfac=`${coefTex(3*a)}${factor(p)}${factor(q)}`;
+ const test=`$f'(${p-1}) = ${fd(p-1).tex()}$, $f'(${mid.tex()}) = ${fd(mid).tex()}$, $f'(${q+1}) = ${fd(q+1).tex()}$`;
+ if(R.next()<0.6){const [nP,nQ]=a>0?['maximum','minimum']:['minimum','maximum'];
+  return{q:`Find the stationary points on the curve $y = ${pTex(cs)}$ and determine their nature.`,marks:3,
+   sol:[`$$\\frac{dy}{dx} = ${pTex(d)} = ${dfac}$$`,`Stationary when $x = ${p}$ or $x = ${q}$: $f(${p}) = ${fp.tex()}$, $f(${q}) = ${fq.tex()}$.`,`Test the gradient: ${test}.`,
+    `$${pt(p,fp)}$ is a ${nP} turning point and $${pt(q,fq)}$ is a ${nQ} turning point.`],ans:`${cap(nP)} turning point $${pt(p,fp)}$, ${nQ} turning point $${pt(q,fq)}$`}}
+ const inc=a>0?`x \\lt ${p}$ or $x \\gt ${q}`:`${p} \\lt x \\lt ${q}`;
+ return{q:`For what values of $x$ is the curve $y = ${pTex(cs)}$ increasing?`,marks:2,
+  sol:[`$$\\frac{dy}{dx} = ${dfac}$$`,`The gradient is zero at $x = ${p}$ and $x = ${q}$. Test the gradient: ${test}.`,`Increasing where $\\dfrac{dy}{dx} \\gt 0$: $${inc}$.`],ans:`$${inc}$`}}
+
+function gDcVelocity(R){let p,q;do{p=R.int(1,5);q=R.int(2,7)}while(p>=q||(p+q)%2!==0);
+ const B=-3*(p+q)/2,C=3*p*q,D=R.int(0,10),cs=[D,C,B,1],v=pDer(cs);
+ return{q:`A particle moves in a straight line. Its displacement, $x$ metres, from the origin after $t$ seconds is $x = ${tVar(pTex(cs))}$. Find the initial velocity, and the times when the particle is at rest.`,marks:3,
+  sol:[`$$v = \\frac{dx}{dt} = ${tVar(pTex(v))}$$`,`Initially, $t = 0$: $v = ${C}$ m/s.`,`At rest when $v = 0$: $$3(${lin(1,-p).replace('x','t')})(${lin(1,-q).replace('x','t')}) = 0, \\quad t = ${p} \\text{ or } t = ${q}$$`],
+  ans:`Initial velocity $${C}$ m/s; at rest when $t = ${p}$ s and $t = ${q}$ s`}}
+
+// ================= YEAR 11: PROBABILITY AND DATA =================
+const VENN=[['play sport','play a musical instrument','students'],['study Biology','study Chemistry','students'],['own a cat','own a dog','people'],['like tennis','like swimming','people'],['use Instagram','use TikTok','students']];
+function venn(R){const [A,B,who]=R.pick(VENN),N=R.int(25,40);let a,b,c,n0;do{a=R.int(5,N-5);b=R.int(5,N-5);c=R.int(1,Math.min(a,b)-1);n0=N-(a+b-c)}while(n0<1);return{A,B,who,N,a,b,c,n0}}
+function gPrSets(R){const {A,B,who,N,a,b,c,n0}=venn(R),v=R.int(0,3),stem=`In a group of $${N}$ ${who}, $${a}$ ${A} and $${b}$ ${B}`;
+ if(v===0)return{q:`${stem}, and $${c}$ do both. How many do neither?`,marks:2,sol:[`$$|A \\cup B| = |A| + |B| - |A \\cap B| = ${a} + ${b} - ${c} = ${a+b-c}$$`,`$$\\text{neither} = ${N} - ${a+b-c} = ${n0}$$`],ans:`$${n0}$`};
+ if(v===1)return{q:`${stem}. $${n0}$ do neither. How many do both?`,marks:2,sol:[`$|A \\cup B| = ${N} - ${n0} = ${N-n0}$`,`$$${N-n0} = ${a} + ${b} - |A \\cap B| \\;\\Rightarrow\\; |A \\cap B| = ${c}$$`],ans:`$${c}$`};
+ const p=v===2?F(a+b-2*c,N):F(n0,N);
+ return{q:`${stem}, and $${c}$ do both. One of them is chosen at random. Find the probability that they ${v===2?'do exactly one of the two':'do neither'}.`,marks:2,
+  sol:v===2?[`Exactly one: $(${a} - ${c}) + (${b} - ${c}) = ${a+b-2*c}$.`,`$$P = \\frac{${a+b-2*c}}{${N}}${p.d===N?'':` = ${p.tex()}`}$$`]:[`Neither: $${N} - (${a} + ${b} - ${c}) = ${n0}$`,`$$P = \\frac{${n0}}{${N}}${p.d===N?'':` = ${p.tex()}`}$$`],ans:`$${p.tex()}$`}}
+
+function gPrAdd(R){const v=R.int(0,2);let a,b,i;do{a=R.int(2,8)*10;b=R.int(2,8)*10;i=R.int(1,Math.min(a,b)/5-1)*5}while(a+b-i>100);
+ if(v===0)return{q:`For events $A$ and $B$, $P(A) = ${dec(a)}$, $P(B) = ${dec(b)}$ and $P(A \\cup B) = ${dec(a+b-i)}$. Find $P(A \\cap B)$.`,marks:1,
+  sol:[`$$P(A \\cap B) = P(A) + P(B) - P(A \\cup B) = ${dec(a)} + ${dec(b)} - ${dec(a+b-i)} = ${dec(i)}$$`],ans:`$${dec(i)}$`};
+ if(v===1)return{q:`For events $A$ and $B$, $P(A) = ${dec(a)}$, $P(B) = ${dec(b)}$ and $P(A \\cap B) = ${dec(i)}$. Find $P(\\overline{A \\cup B})$.`,marks:2,
+  sol:[`$$P(A \\cup B) = ${dec(a)} + ${dec(b)} - ${dec(i)} = ${dec(a+b-i)}$$`,`$$P(\\overline{A \\cup B}) = 1 - ${dec(a+b-i)} = ${dec(100-a-b+i)}$$`],ans:`$${dec(100-a-b+i)}$`};
+ let x,y;do{x=R.int(1,7)*10;y=R.int(1,7)*10}while(x+y>=100);
+ return{q:`$A$ and $B$ are mutually exclusive events with $P(A) = ${dec(x)}$ and $P(B) = ${dec(y)}$. Find the probability that neither $A$ nor $B$ occurs.`,marks:2,
+  sol:[`Mutually exclusive, so $P(A \\cap B) = 0$ and $P(A \\cup B) = ${dec(x)} + ${dec(y)} = ${dec(x+y)}$.`,`$$P(\\text{neither}) = 1 - ${dec(x+y)} = ${dec(100-x-y)}$$`],ans:`$${dec(100-x-y)}$`}}
+
+function gPrCond(R){
+ if(R.next()<0.5){let q,r;do{q=R.int(2,9)*10;r=R.int(1,q/5-1)*5}while(r>=q);const p=F(r,q);
+  return{q:`For events $A$ and $B$, $P(B) = ${dec(q)}$ and $P(A \\cap B) = ${dec(r)}$. Find $P(A \\mid B)$.`,marks:1,
+   sol:[`$$P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{${dec(r)}}{${dec(q)}} = ${frDec(p)}$$`],ans:`$${frDec(p)}$`}}
+ const {A,B,who,N,a,b,c}=venn(R),p=F(c,a);
+ return{q:`In a group of $${N}$ ${who}, $${a}$ ${A}, $${b}$ ${B} and $${c}$ do both. One of the ${who} who ${A} is chosen at random. Find the probability that they also ${B}.`,marks:2,
+  sol:[`The sample space is restricted to the $${a}$ ${who} who ${A}; $${c}$ of them also ${B}.`,`$$P = \\frac{${c}}{${a}} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+
+function gPrIndep(R){const v=R.int(0,2),a=R.int(1,9),b=R.int(1,9);
+ if(v===0){const ind=R.next()<0.5,ab=a*b,i=ind?ab:ab+R.pick([-5,5,10]);if(i<=0||i>=Math.min(a,b)*10)return gPrIndep(R);
+  return{q:`$P(A) = ${dec(a,10)}$, $P(B) = ${dec(b,10)}$ and $P(A \\cap B) = ${dec(i)}$. Are $A$ and $B$ independent? Justify your answer.`,marks:2,
+   sol:[`$$P(A)\\times P(B) = ${dec(a,10)}\\times ${dec(b,10)} = ${dec(ab)}$$`,ind?`This equals $P(A \\cap B)$, so $A$ and $B$ are independent.`:`This is not equal to $P(A \\cap B) = ${dec(i)}$, so $A$ and $B$ are not independent.`],
+   ans:ind?'Independent, since $P(A \\cap B) = P(A)P(B)$':'Not independent, since $P(A \\cap B) \\ne P(A)P(B)$'}}
+ if(v===1){const u=10*a+10*b-a*b;
+  return{q:`$A$ and $B$ are independent events with $P(A) = ${dec(a,10)}$ and $P(B) = ${dec(b,10)}$. Find $P(A \\cup B)$.`,marks:2,
+   sol:[`Independent: $P(A \\cap B) = ${dec(a,10)}\\times ${dec(b,10)} = ${dec(a*b)}$.`,`$$P(A \\cup B) = ${dec(a,10)} + ${dec(b,10)} - ${dec(a*b)} = ${dec(u)}$$`],ans:`$${dec(u)}$`}}
+ return{q:`$A$ and $B$ are independent events with $P(A) = ${dec(a,10)}$ and $P(A \\cap B) = ${dec(a*b)}$. Find $P(B)$.`,marks:2,
+  sol:[`$$P(A \\cap B) = P(A)\\times P(B) \\;\\Rightarrow\\; P(B) = \\frac{${dec(a*b)}}{${dec(a,10)}} = ${dec(b,10)}$$`],ans:`$${dec(b,10)}$`}}
+
+function gPrTree(R){const [it,c1,c2]=R.pick([['marbles','red','blue'],['counters','green','yellow'],['lollies','red','orange'],['socks','black','white']]),r=R.int(2,7),b=R.int(2,6),n=r+b,v=R.int(0,4);
+ const stem=`A bag contains $${r}$ ${c1} and $${b}$ ${c2} ${it}.`,nn=n*(n-1);
+ if(v===0){const p=F(r*(r-1)+b*(b-1),nn);return{q:`${stem} Two are drawn at random without replacement. Find the probability that they are the same colour.`,marks:2,
+  sol:[`$$P(\\text{both ${c1}}) = \\frac{${r}}{${n}}\\times\\frac{${r-1}}{${n-1}} = ${F(r*(r-1),nn).tex()}, \\quad P(\\text{both ${c2}}) = \\frac{${b}}{${n}}\\times\\frac{${b-1}}{${n-1}} = ${F(b*(b-1),nn).tex()}$$`,`$$P(\\text{same}) = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===1){const p=F(2*r*b,nn);return{q:`${stem} Two are drawn at random without replacement. Find the probability that one of each colour is drawn.`,marks:2,
+  sol:[`$$P = \\frac{${r}}{${n}}\\times\\frac{${b}}{${n-1}} + \\frac{${b}}{${n}}\\times\\frac{${r}}{${n-1}} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===2){const p=F(nn-b*(b-1),nn);return{q:`${stem} Two are drawn at random without replacement. Find the probability that at least one is ${c1}.`,marks:2,
+  sol:[`$$P(\\text{no ${c1}}) = \\frac{${b}}{${n}}\\times\\frac{${b-1}}{${n-1}} = ${F(b*(b-1),nn).tex()}$$`,`$$P(\\text{at least one ${c1}}) = 1 - ${F(b*(b-1),nn).tex()} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===3){const p=F(r*r,n*n);return{q:`${stem} One is drawn at random, its colour noted and it is replaced. A second is then drawn. Find the probability that both are ${c1}.`,marks:1,
+  sol:[`$$P = \\frac{${r}}{${n}}\\times\\frac{${r}}{${n}} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ const p=F(2*r*b,n*n);return{q:`${stem} One is drawn at random, its colour noted and it is replaced. A second is then drawn. Find the probability that exactly one ${c1} is drawn.`,marks:2,
+  sol:[`$$P = \\frac{${r}}{${n}}\\times\\frac{${b}}{${n}} + \\frac{${b}}{${n}}\\times\\frac{${r}}{${n}} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+
+const DICE=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)DICE.push([i,j]);
+function gPrDice(R){const v=R.int(0,4),cnt=f=>DICE.filter(f).length;
+ if(v===0){const s=R.int(2,12),n=cnt(([i,j])=>i+j===s),p=F(n,36);return{q:`Two fair six-sided dice are rolled. Find the probability that the sum is $${s}$.`,marks:1,
+  sol:[`There are $36$ equally likely outcomes, and $${n}$ give a sum of $${s}$.`,`$$P = \\frac{${n}}{36} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===1){const s=R.int(4,11),n=cnt(([i,j])=>i+j>=s),p=F(n,36);return{q:`Two fair six-sided dice are rolled. Find the probability that the sum is at least $${s}$.`,marks:1,
+  sol:[`Of the $36$ outcomes, $${n}$ have a sum of $${s}$ or more.`,`$$P = \\frac{${n}}{36} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===2){const k=R.pick([2,3,4,5,6]),n=cnt(([i,j])=>(i*j)%k===0),p=F(n,36);return{q:`Two fair six-sided dice are rolled and the numbers are multiplied. Find the probability that the product is a multiple of $${k}$.`,marks:1,
+  sol:[`Count the outcomes in the $6\\times 6$ array whose product is a multiple of $${k}$: there are $${n}$.`,`$$P = \\frac{${n}}{36} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ if(v===3){const s=R.int(8,11),nA=6,nB=cnt(([i,j])=>i+j>=s),nAB=cnt(([i,j])=>i===j&&i+j>=s),p=F(nA+nB-nAB,36);
+  return{q:`Two fair six-sided dice are rolled. Find the probability of rolling a double or a sum of at least $${s}$.`,marks:2,
+   sol:[`Doubles: $6$. Sum at least $${s}$: $${nB}$. Both: $${nAB}$.`,`$$P = \\frac{6 + ${nB} - ${nAB}}{36} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+ let k,s,nB,nAB;do{k=R.int(1,6);s=R.int(6,10);nB=cnt(([i,j])=>i===k||j===k);nAB=cnt(([i,j])=>(i===k||j===k)&&i+j>=s)}while(nAB===0||nAB===nB);const p=F(nAB,nB);
+ return{q:`Two fair six-sided dice are rolled. Given that at least one die shows a $${k}$, find the probability that the sum is at least $${s}$.`,marks:2,
+  sol:[`At least one $${k}$: $${nB}$ outcomes. Of these, $${nAB}$ have a sum of at least $${s}$.`,`$$P = \\frac{${nAB}}{${nB}} = ${p.tex()}$$`],ans:`$${p.tex()}$`}}
+
+function gPrData(R){const [what,lo,hi]=R.pick([['goals scored by a team in each game',0,5],['people in each car passing a checkpoint',1,6],['books read by each student last month',0,7],['siblings of each student in a class',0,5]]);
+ let xs,mode;do{const n=R.int(9,14);xs=[...Array(n)].map(()=>R.int(lo,hi));const f={};xs.forEach(x=>f[x]=(f[x]||0)+1);const mx=Math.max(...Object.values(f)),ms=Object.keys(f).filter(k=>f[k]===mx);mode=ms.length===1?+ms[0]:null}while(mode===null);
+ const s=[...xs].sort((a,b)=>a-b),n=s.length,med=n%2?F(s[(n-1)/2]):F(s[n/2-1]+s[n/2],2);
+ if(R.next()<0.6)return{q:`The numbers of ${what} were: $${xs.join(',\\ ')}$. Find the mode and the median.`,marks:2,
+  sol:[`In order: $${s.join(',\\ ')}$ ($${n}$ values).`,`Mode: $${mode}$ (most frequent).`,n%2?`Median: the middle ($${(n+1)/2}$th) value, $${med.tex()}$.`:`Median: the mean of the $${n/2}$th and $${n/2+1}$th values, $\\frac{${s[n/2-1]} + ${s[n/2]}}{2} = ${dp(med.val(),1).replace('.0','')}$.`],
+  ans:`Mode $${mode}$, median $${n%2?med.tex():dp(med.val(),1).replace('.0','')}$`};
+ const k=R.int(s[0],Math.max(s[0],s[n-1]-1)),c=s.filter(x=>x<=k).length,rf=F(c,n);
+ return{q:`The numbers of ${what} were: $${xs.join(',\\ ')}$. Find the cumulative frequency and the cumulative relative frequency of the value $${k}$.`,marks:2,
+  sol:[`Values of $${k}$ or less: $${c}$ out of $${n}$.`,`Cumulative frequency $${c}$; cumulative relative frequency $\\frac{${c}}{${n}}${rf.d!==n||c===0?` = ${rf.tex()}`:''}$.`],ans:`$${c}$ and $${rf.tex()}$`}}
+
+function gPrRelFreq(R){const T=R.pick([50,100,200,250,400,500]),[thing,out]=R.pick([['a spinner was spun','landed on red'],['a drawing pin was dropped','landed point up'],['a coin was tossed','showed heads'],['a die was rolled','showed a six']]);
+ const s=R.int(Math.round(T*0.1),Math.round(T*0.6)),M=R.pick([100,300,600,1000,1500]),rf=s/T,E=Math.round(M*rf);
+ return{q:`In an experiment, ${thing} $${T}$ times and ${out} $${s}$ times. Estimate the probability of this outcome, and the number of times it would be expected in $${M}$ more trials.`,marks:2,
+  sol:[`Relative frequency: $\\frac{${s}}{${T}} = ${String(Number(rf.toFixed(6)))}$, which estimates the probability.`,`$$\\text{expected} = ${M}\\times ${String(Number(rf.toFixed(6)))} ${Number.isInteger(M*rf)?'=':'\\approx'} ${E}$$`],ans:`$${String(Number(rf.toFixed(6)))}$; about $${E}$ times`}}
+
+function gPrRV(R){const L=[['the number of goals in a soccer match','discrete'],['the time taken to run 100 m','continuous'],['the number of heads in 10 coin tosses','discrete'],['the height of a randomly chosen student','continuous'],
+ ['the number of cars in a car park','discrete'],['the mass of a newborn baby','continuous'],['the number of siblings a student has','discrete'],['the temperature at noon','continuous'],['the score on a fair die','discrete'],['the length of a fish caught','continuous']];
+ const pick=R.sample(L,3),lab=['a','b','c'];
+ return{q:`Classify each random variable as discrete or continuous: ${pick.map((x,i)=>`(${lab[i]}) ${x[0]}`).join('; ')}.`,marks:1,
+  sol:['A discrete variable takes separate, countable values; a continuous variable can take any value in an interval (it is measured).',...pick.map((x,i)=>`(${lab[i]}) ${cap(x[1])}`)],ans:pick.map((x,i)=>`(${lab[i]}) ${x[1]}`).join(', ')}}
+
+// ================= YEAR 11: EXPONENTIAL AND LOG GRAPHS =================
+function gLGraph(R){
+ if(R.next()<0.6){const a=R.pick([2,3,'e']),k=R.pick([1,2,3,-1,-2]),c=R.int(-4,4),neg=R.next()<0.4,ex=neg?'-x':'x';
+  const y0=F(k+c),pos=k>0,base=`${a}^{${ex}}`,kb=Math.abs(k)===1?coefTex(k)+base:a==='e'?`${k}${base}`:`${k}\\times ${base}`;
+  return{q:`For $y = ${kb}${c?term(c,'',false):''}$, state the equation of the asymptote, the $y$-intercept and the range.`,marks:2,
+   sol:[`As $x \\to ${neg?'\\infty':'-\\infty'}$, $${base} \\to 0$, so $y \\to ${c}$: the asymptote is $y = ${c}$.`,`$y$-intercept: $y = ${k}\\times ${a}^{0}${c?` ${c<0?'-':'+'} ${Math.abs(c)}`:''} = ${y0.tex()}$, so $(0, ${y0.tex()})$.`,
+    `$${kb}$ is always ${pos?'positive':'negative'}, so the range is $y ${pos?'\\gt':'\\lt'} ${c}$.`],ans:`Asymptote $y = ${c}$, $y$-intercept $(0, ${y0.tex()})$, range $y ${pos?'\\gt':'\\lt'} ${c}$`}}
+ const a=R.pick([2,3,10,'e']),h=R.nz(-5,5),L=lin(1,-h),fn=a==='e'?`\\ln(${L})`:`\\log_{${a}}(${L})`;
+ return{q:`For $y = ${fn}$, state the domain, the equation of the asymptote and the $x$-intercept.`,marks:2,
+  sol:[`The logarithm needs $${L} \\gt 0$, so the domain is $x \\gt ${h}$ and the asymptote is $x = ${h}$.`,`$x$-intercept: $${fn} = 0$ when $${L} = 1$, so $x = ${h+1}$.`],ans:`Domain $x \\gt ${h}$, asymptote $x = ${h}$, $x$-intercept $(${h+1}, 0)$`}}
+
+
 // ================= TOPICS & LESSONS =================
 // Rename / reorder / regroup freely. Lesson ids are used in share links, so keep them stable once in use.
 const TOPICS=[
@@ -728,7 +1218,8 @@ const TOPICS=[
   {id:'el-solveexp',group:'Equations',name:'Exponential equations using logs',gen:gLSolveExp,marks:2},
   {id:'el-hidden',group:'Equations',name:'Hidden quadratics in a to the x',gen:gLHidden,marks:3},
   {id:'el-lnquad',group:'Equations',name:'Hidden quadratics in ln x',gen:gLLnQuad,marks:3},
-  {id:'el-derivex',group:'Calculus',name:'The derivative of e to the x',gen:gLDerivEx,marks:2}]},
+  {id:'el-derivex',group:'Calculus',name:'The derivative of e to the x',gen:gLDerivEx,marks:2},
+  {id:'el-graph',group:'Graphs',name:'Exponential and log graphs: asymptotes and intercepts',gen:gLGraph,marks:2}]},
  {id:'12adv-integration',name:'Integral calculus',course:'Year 12 Advanced',lessons:[
   {id:'ic-power',name:'Power rule (polynomials)',gen:gPower,marks:2},
   {id:'ic-index',name:'Negative and fractional indices',gen:gIndices,marks:2},
@@ -770,9 +1261,52 @@ const TOPICS=[
   {id:'wf-piecewise',group:'Properties of functions',name:'Piecewise functions and continuity',gen:gPiecewise,marks:3},
   {id:'wf-abs',group:'Properties of functions',name:'Absolute value equations',gen:gAbsEq,marks:2},
   ]},
- {id:'11adv-calculus',name:'Differential calculus (review)',course:'Year 11 Advanced',lessons:[
-  {id:'dc-index',name:'Differentiating with indices',gen:gDiffIdx,marks:2},
-  {id:'dc-tangent',name:'Equation of a tangent',gen:gTangent,marks:3}]}
+ {id:'11adv-transform',name:'Graph transformations',course:'Year 11 Advanced',lessons:[
+  {id:'gt-rule',name:'Writing the transformed equation',gen:gGtRule,marks:2},
+  {id:'gt-describe',name:'Describing transformations',gen:gGtDescribe,marks:2},
+  {id:'gt-point',name:'Image of a point',gen:gGtPoint,marks:2},
+  {id:'gt-features',name:'Asymptotes, domain and range of transformed graphs',gen:gGtFeatures,marks:3},
+  {id:'gt-circle',name:'Circles: centre and radius',gen:gGtCircle,marks:3}]},
+ {id:'11adv-trigmeasure',name:'Trigonometry and measure of angles',course:'Year 11 Advanced',lessons:[
+  {id:'tm-exact',group:'Exact values',name:'Exact ratios for 30°, 45° and 60°',gen:gTmExact,marks:1},
+  {id:'tm-anymag',group:'Exact values',name:'Angles of any magnitude',gen:gTmAnyMag,marks:1},
+  {id:'tm-right',group:'Triangles',name:'Right triangles: elevation, depression and bearings',gen:gTmRight,marks:2},
+  {id:'tm-sine',group:'Triangles',name:'Sine rule',gen:gTmSine,marks:2},
+  {id:'tm-ambig',group:'Triangles',name:'Sine rule: the ambiguous case',gen:gTmAmbig,marks:3},
+  {id:'tm-cosine',group:'Triangles',name:'Cosine rule',gen:gTmCosine,marks:2},
+  {id:'tm-area',group:'Triangles',name:'Area of a triangle',gen:gTmArea,marks:2},
+  {id:'tm-radians',group:'Radians',name:'Converting degrees and radians',gen:gTmRadians,marks:1},
+  {id:'tm-arc',group:'Radians',name:'Arcs, sectors and segments',gen:gTmArc,marks:2}]},
+ {id:'11adv-trigid',name:'Trigonometric identities and equations',course:'Year 11 Advanced',lessons:[
+  {id:'ti-recip',name:'Exact values of sec, cosec and cot',gen:gTiRecip,marks:1},
+  {id:'ti-comp',name:'Complementary angle identities',gen:gTiComp,marks:1},
+  {id:'ti-simplify',name:'Simplifying with identities',gen:gTiSimplify,marks:2},
+  {id:'ti-prove',name:'Proving identities',gen:gTiProve,marks:2},
+  {id:'ti-solve',name:'Solving trig equations',gen:gTiSolve,marks:2},
+  {id:'ti-quad',name:'Trig equations that reduce to quadratics',gen:gTiQuad,marks:3}]},
+ {id:'11adv-calculus',name:'Introduction to differentiation',course:'Year 11 Advanced',lessons:[
+  {id:'dc-avg',group:'Rates of change',name:'Average rate of change',gen:gDcAvg,marks:2},
+  {id:'dc-first',group:'Rates of change',name:'First principles',gen:gDcFirst,marks:3},
+  {id:'dc-index',group:'Rules',name:'Differentiating with indices',gen:gDiffIdx,marks:2},
+  {id:'dc-chain',group:'Rules',name:'Chain rule',gen:gDcChain,marks:2},
+  {id:'dc-product',group:'Rules',name:'Product rule',gen:gDcProduct,marks:2},
+  {id:'dc-quotient',group:'Rules',name:'Quotient rule',gen:gDcQuotient,marks:2},
+  {id:'dc-tangent',group:'Tangents and normals',name:'Equation of a tangent',gen:gTangent,marks:3},
+  {id:'dc-normal',group:'Tangents and normals',name:'Equation of a normal',gen:gDcNormal,marks:3},
+  {id:'dc-gradpt',group:'Tangents and normals',name:'Points with a given gradient',gen:gDcGradPt,marks:3},
+  {id:'dc-incline',group:'Tangents and normals',name:'Angle of inclination',gen:gDcIncline,marks:2},
+  {id:'dc-stat',group:'Graphs and motion',name:'Stationary points and increasing intervals',gen:gDcStat,marks:3},
+  {id:'dc-velocity',group:'Graphs and motion',name:'Velocity from displacement',gen:gDcVelocity,marks:3}]},
+ {id:'11adv-probability',name:'Probability and data',course:'Year 11 Advanced',lessons:[
+  {id:'pr-sets',group:'Sets and probability',name:'Venn diagram counting',gen:gPrSets,marks:2},
+  {id:'pr-add',group:'Sets and probability',name:'Addition rule and complements',gen:gPrAdd,marks:2},
+  {id:'pr-tree',group:'Sets and probability',name:'Multistage events',gen:gPrTree,marks:2},
+  {id:'pr-dice',group:'Sets and probability',name:'Two dice',gen:gPrDice,marks:1},
+  {id:'pr-cond',group:'Conditional probability',name:'Conditional probability',gen:gPrCond,marks:2},
+  {id:'pr-indep',group:'Conditional probability',name:'Independent events',gen:gPrIndep,marks:2},
+  {id:'pr-rv',group:'Data',name:'Discrete and continuous variables',gen:gPrRV,marks:1},
+  {id:'pr-data',group:'Data',name:'Mode, median and cumulative frequency',gen:gPrData,marks:2},
+  {id:'pr-relfreq',group:'Data',name:'Relative frequency',gen:gPrRelFreq,marks:2}]}
 ];
 const LESSONS={};TOPICS.forEach(t=>t.lessons.forEach(l=>{l.topic=t;LESSONS[l.id]=l}));
 
