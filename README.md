@@ -68,6 +68,17 @@ one self-contained page each, listed in `generators/generators.json`:
 
 `courses` uses the courses' `short` names, so the chips pick up the course colours.
 
+There are three generators, all drawing on the same question bank (`generators/engine.js`):
+
+- **Question generator**: random questions with worked solutions, on screen.
+- **LSQ generator**: a Low Stakes Quiz on two A4 pages, sized to a time you set.
+- **Homework generator** (`homework.html`): a weekly one-page A4 sheet set out like an HSC
+  extended-response question. Its parts (a), (b), (c)… run from short skills to multi-step
+  questions, with marks in the margin and lined working space. The 2 and 3 mark lessons are
+  preferred, with at most two 1-mark parts. The suggested time uses the HSC rate of 1.8 minutes
+  a mark. It downloads as a PDF, with a separate sample-answers PDF. The class, week, due date and
+  seed all go in the link, so a saved link rebuilds the same sheet.
+
 The question generator's topics and lessons are the `TOPICS` list near the bottom of its
 `<script id="engine">`. Each lesson points at a generator function that returns the question,
 the worked-solution lines and the answer. Lesson ids appear in shared links, so keep them

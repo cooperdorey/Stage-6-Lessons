@@ -555,10 +555,12 @@ function gDAx(R){const a=R.pick([2,3,5,7,10]),b=R.pick([1,1,2,3,-1]),k=R.pick([1
   sol:[`$\\dfrac{d}{dx}a^{x} = (\\ln a)a^{x}$; with the chain rule, $\\dfrac{d}{dx}a^{bx} = b(\\ln a)a^{bx}$.`,`$$\\frac{dy}{dx} = ${lead}(\\ln ${a})\\,${a}^{${e}}$$`],ans:`$${lead}(\\ln ${a})\\,${a}^{${e}}$`}}
 
 function gDProdExp(R){const k=R.nz(-4,4),n=R.int(1,3),E=ex(lin(k,0)),v=R.next();
- if(v<0.6){const xn=xp(n),xm=xp(n-1),br=lin(k,n);
+ if(v<0.6){const xn=xp(n),xm=xp(n-1);
+  // fully factorised: take out the common number too, and lead with the positive term, e.g. 2xe^{-4x}(1 - 2x)
+  const g=gcd(k,n),a=Math.abs(k)/g,c=n/g,ax=a===1?'x':a+'x',br=k>0?lin(a,c):`${c} - ${ax}`,pre=g===1?'':String(g);
   return{q:`Differentiate $y = ${xn}${E}$, giving your answer in factorised form.`,marks:2,
    sol:[`Product rule: $u = ${xn}$, $u' = ${n===1?'1':term(n,xm,true)}$; $\\;v = ${E}$, $v' = ${coefTex(k)}${E}$.`,
-    `$$\\frac{dy}{dx} = ${n===1?'':term(n,xm,true)}${E} ${k<0?'-':'+'} ${coefTex(Math.abs(k))}${xn}${E}$$`,`$$= ${xm}${E}(${br})$$`],ans:`$${xm}${E}(${br})$`}}
+    `$$\\frac{dy}{dx} = ${n===1?'':term(n,xm,true)}${E} ${k<0?'-':'+'} ${coefTex(Math.abs(k))}${xn}${E}$$`,`$$= ${pre}${xm}${E}(${br})$$`],ans:`$${pre}${xm}${E}(${br})$`}}
  const m=R.int(1,2),xm=xp(m),num=lin(k,-m),den=xp(m+1);
  return{q:`Differentiate $y = \\dfrac{${E}}{${xm}}$, giving your answer in simplest form.`,marks:2,
   sol:[`Quotient rule: $u = ${E}$, $u' = ${coefTex(k)}${E}$; $\\;v = ${xm}$, $v' = ${m===1?'1':`${m}x`}$.`,

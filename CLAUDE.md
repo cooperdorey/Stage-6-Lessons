@@ -21,7 +21,10 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
 - Before committing, run `python3 scripts/build_manifest.py`; it must report no problems.
 - Generators: one page per generator in `generators/`, registered in
   `generators/generators.json`. The question bank (`gen` functions, topics, lessons and each
-  lesson's `marks`) lives in `generators/engine.js`, shared by the question generator and the
-  LSQ generator (`lsq.html`, 2-page A4 quiz, PDF via the vendored jsPDF + html-to-image). They use the site's vendored KaTeX (MathML output), no CDNs.
+  lesson's `marks`) lives in `generators/engine.js`, shared by the question generator, the
+  LSQ generator (`lsq.html`, 2-page A4 quiz, PDF via the vendored jsPDF + html-to-image) and the
+  homework generator (`homework.html`, one-page HSC-style Question 1 with parts (a), (b)… sorted
+  by marks, at most two 1-mark parts, same PDF approach). A lesson's `marks` decides where its
+  questions sit on the homework sheet, so set it to the HSC value. They use the site's vendored KaTeX (MathML output), no CDNs.
   In the question generator, test every generator function on many seeds before committing
   (all maths must parse in KaTeX; no `NaN`, `undefined`, `+ -` or `1x`).
