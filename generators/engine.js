@@ -1308,6 +1308,30 @@ const TOPICS=[
   {id:'pr-data',group:'Data',name:'Mode, median and cumulative frequency',gen:gPrData,marks:2},
   {id:'pr-relfreq',group:'Data',name:'Relative frequency',gen:gPrRelFreq,marks:2}]}
 ];
+// Sheet codes (printed on LSQ and homework sheets) record the ticked lessons as bits in this order.
+// APPEND new lesson ids to the END only; never reorder or remove, or old printed codes will point at the wrong lessons.
+// scripts/build_manifest.py fails the publish if a lesson in TOPICS is missing from this list.
+const CODE_ORDER=[
+ "dd-exp","dd-ax","dd-prodexp","dd-tanexp","dd-ln","dd-loglaw","dd-loga","dd-trig",
+ "dd-trigprod","dd-trigexact","el-eval","el-laws","el-expand","el-pq","el-change","el-domain",
+ "el-samebase","el-solveexp","el-hidden","el-lnquad","el-derivex","el-graph","ic-power","ic-index",
+ "ic-chain","ic-def","ic-exp","ic-log","ic-trig","ic-area","ic-signed","ic-trap",
+ "wf-index","wf-fracidx","wf-expand","wf-factorise","wf-special","wf-algfrac","wf-surds","wf-rationalise",
+ "wf-quadformula","wf-compsquare","wf-discriminant","wf-notation","wf-domain","wf-line2pts","wf-parperp","wf-linefeat",
+ "wf-linineq","wf-parabola","wf-equate","wf-simul","wf-quadineq","wf-breakeven","wf-variation","wf-circle",
+ "wf-oddeven","wf-composite","wf-piecewise","wf-abs","gt-rule","gt-describe","gt-point","gt-features",
+ "gt-circle","tm-exact","tm-anymag","tm-right","tm-sine","tm-ambig","tm-cosine","tm-area",
+ "tm-radians","tm-arc","ti-recip","ti-comp","ti-simplify","ti-prove","ti-solve","ti-quad",
+ "dc-avg","dc-first","dc-index","dc-chain","dc-product","dc-quotient","dc-tangent","dc-normal",
+ "dc-gradpt","dc-incline","dc-stat","dc-velocity","pr-sets","pr-add","pr-tree","pr-dice",
+ "pr-cond","pr-indep","pr-rv","pr-data","pr-relfreq",
+];
+function encodeLessons(ids){const on=new Set(ids);let n=0n;CODE_ORDER.forEach((id,i)=>{if(on.has(id))n|=1n<<BigInt(i)});return n.toString(36)}
+function decodeLessons(s){let n=0n;for(const ch of String(s).toLowerCase()){const d=parseInt(ch,36);if(isNaN(d))return [];n=n*36n+BigInt(d)}return CODE_ORDER.filter((id,i)=>(n>>BigInt(i))&1n).filter(id=>LESSONS[id])}
+// sheet code: seed.marks.lessons (homework) or seed.minutes.marks.lessons (LSQ)
+function sheetCode(seed,nums,ids){return [seed,...nums,encodeLessons(ids)].join(".")}
+function readSheetCode(code,nNums){const p=String(code).trim().split(".");if(p.length<nNums+2)return null;const ids=decodeLessons(p[p.length-1]),nums=p.slice(-1-nNums,-1).map(Number);
+ if(!ids.length||nums.some(isNaN))return null;return{seed:p.slice(0,-1-nNums).join("."),nums,ids}}
 const LESSONS={};TOPICS.forEach(t=>t.lessons.forEach(l=>{l.topic=t;LESSONS[l.id]=l}));
 
 function buildSet(ids,n,seed,mix){const R=makeRng(seed+'|'+ids.join(','));

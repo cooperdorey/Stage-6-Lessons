@@ -25,7 +25,9 @@ We Do levels) live in the Lesson Creator project; this file covers the repo form
   LSQ generator (`lsq.html`, 2-page A4 quiz, PDF via the vendored jsPDF + html-to-image) and the
   homework generator (`homework.html`, two-page (double-sided) HSC-style Question 1 with parts (a), (b)… sorted
   by marks, at most two 1-mark parts, same PDF approach). A lesson's `marks` decides where its
-  questions sit on the homework sheet, so set it to the HSC value. The All / Yr 11 / Yr 12 / Clear buttons above each topic list come from
+  questions sit on the homework sheet, so set it to the HSC value. New lessons must also be APPENDED to the end of `CODE_ORDER`
+  in engine.js (never reorder): the faint sheet code printed on LSQ and homework pages records the ticked
+  lessons as bits in that order, and the build fails if a lesson is missing. The All / Yr 11 / Yr 12 / Clear buttons above each topic list come from
   `generators/picker.js` (load it after the page's own script); a topic's year is read from its `course`. They use the site's vendored KaTeX (MathML output), no CDNs.
   In the question generator, test every generator function on many seeds before committing
   (all maths must parse in KaTeX; no `NaN`, `undefined`, `+ -` or `1x`).

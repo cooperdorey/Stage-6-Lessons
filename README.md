@@ -79,6 +79,10 @@ There are three generators, all drawing on the same question bank (`generators/e
   a mark. Parts never split across the two sides. It downloads as a PDF, with a separate sample-answers PDF. The class, week, due date and
   seed all go in the link, so a saved link rebuilds the same sheet.
 
+Every LSQ and homework page has a faint **sheet code** centred under the footer (seed, marks
+and ticked lessons). Type it into the Seed box and press Generate to rebuild that exact sheet
+and its answers.
+
 The question generator's topics and lessons are the `TOPICS` list near the bottom of its
 `<script id="engine">`. Each lesson points at a generator function that returns the question,
 the worked-solution lines and the answer. Lesson ids appear in shared links, so keep them

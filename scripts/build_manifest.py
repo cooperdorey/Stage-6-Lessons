@@ -145,6 +145,23 @@ for y in subdirs(LESSONS):
         m = read_meta(yp)
         years.append({'id': y, 'name': m.get('name', nice(y)), 'colour': m.get('colour', ''), 'courses': courses})
 
+# Generators: every lesson must have a slot in CODE_ORDER, or printed sheet codes can't record it.
+eng_path = os.path.join(ROOT, 'generators', 'engine.js')
+if os.path.exists(eng_path):
+    with open(eng_path, encoding='utf-8') as fh:
+        eng = fh.read()
+    lesson_ids = re.findall(r"\{id:'([\w-]+)'[^{}]*?\bgen:", eng)
+    m = re.search(r'const CODE_ORDER=\[(.*?)\];', eng, re.S)
+    order = re.findall(r'"([\w-]+)"', m.group(1)) if m else []
+    if not m:
+        problems.append('generators/engine.js: CODE_ORDER list not found')
+    for lid in lesson_ids:
+        if lid not in order:
+            problems.append(f'generators/engine.js: lesson "{lid}" is missing from CODE_ORDER (add it at the END of the list)')
+    dups = sorted({x for x in order if order.count(x) > 1})
+    if dups:
+        problems.append(f'generators/engine.js: CODE_ORDER lists {", ".join(dups)} more than once')
+
 with open(os.path.join(ROOT, 'manifest.json'), 'w', encoding='utf-8') as fh:
     json.dump({'years': years}, fh, ensure_ascii=False, indent=1)
 

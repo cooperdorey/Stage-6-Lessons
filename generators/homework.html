@@ -87,6 +87,7 @@ main{min-width:0}
 .pq .space{grid-column:2/-1;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,#e6e6e6 31px 32px);background-position:0 6px}
 .pq .space.plain{background:none}
 .pfoot{position:absolute;left:60px;right:60px;bottom:22px;display:flex;justify-content:space-between;font-family:var(--ui);font-size:10.5px;color:#666}
+.pfoot .code{position:absolute;left:50%;transform:translateX(-50%);bottom:-12px;font-size:8px;letter-spacing:.04em;color:#b4b8be;white-space:nowrap}
 .pfoot .end{font-weight:700;color:#333}
 .cont{font-family:var(--ui);font-size:11.5px;color:#555;border-bottom:1px solid #bbb;padding-bottom:4px;margin-bottom:2px;display:flex;justify-content:space-between}
 .cont+.qhead{margin-top:6px}
@@ -120,8 +121,9 @@ main{min-width:0}
    <div><label for="due">Due</label><input id="due" type="date"></div>
    <div><label for="marks">Marks</label><input id="marks" type="number" min="6" max="30" value="20"></div>
    <div class="full hint">Two A4 pages: one sheet printed double-sided. 16 to 24 marks fit well. The suggested time follows the HSC rate of 1.8 minutes a mark.</div>
-   <div class="full"><label for="seed">Seed</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New sheet" aria-label="New sheet">🎲</button></div></div>
+   <div class="full"><label for="seed">Seed or sheet code</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New sheet" aria-label="New sheet">🎲</button></div></div>
   </div>
+  <div class="hint">To find the answers to a printed sheet, type the faint code at the bottom of its page here and press Generate.</div>
   <button class="primary" id="go">Generate</button>
   <div class="btnrow">
    <button id="pdfQ" disabled>Download homework PDF</button>
@@ -234,7 +236,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const inl=s=>String(s).replace(/\$\$([\s\S]+?)\$\$/g,(m,x)=>`<div>$\\displaystyle ${x}$</div>`);
  const qHTML=(Q,i,space)=>`<div class="pq"><div class="n">${PART(i)}</div><div class="p">${inl(Q.q).replace(/\\frac/g,'\\dfrac')}</div><div class="mk">${Q.marks}</div>${space==null?'':`<div class="space" style="height:${space}px"></div>`}</div>`;
  const aHTML=(Q,i)=>`<div class="pq"><div class="n">${PART(i)}</div><div><div class="lbl">Sample answer</div><div class="steps">${Q.sol.map(s=>`<div>${inl(s)}</div>`).join('')}<div class="final">Answer: ${inl(Q.ans)}</div></div><div class="src">${esc(Q.lesson.topic.name)} · ${esc(Q.lesson.name)}</div></div><div class="mk">${Q.marks}</div></div>`;
- const foot=(info,p,n,label,end)=>`<div class="pfoot"><span>${esc(fullTitle(info))}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span><span${end?' class="end"':''}>${end==='turn'?'Please turn over':end?'End of homework':`Page ${p} of ${n}`}</span></div>`;
+ const foot=(info,p,n,label,end)=>`<div class="pfoot"><span>${esc(fullTitle(info))}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span>${info.code?`<span class="code">${esc(info.code)}</span>`:''}<span${end?' class="end"':''}>${end==='turn'?'Please turn over':end?'End of homework':`Page ${p} of ${n}`}</span></div>`;
  const contHTML=info=>`<div class="cont"><span>${esc(fullTitle(info))}: Question 1 (continued)</span><span>Name: ______________________</span></div>`;
 
  function measure(htmls,headHtml){const m=$('measure');
@@ -260,7 +262,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   hs.forEach((h,i)=>{if(cur.length&&used+h>avail){pages.push(cur);cur=[];used=0}cur.push(i);used+=h+4});if(cur.length)pages.push(cur);return pages}
 
  let current=null;
- function generate(){
+ // a sheet code from a printed sheet (seed.marks.lessons) rebuilds that exact sheet
+ function applyCode(){const v=$('seed').value.trim();if(!v.includes('.'))return;const c=readSheetCode(v,1);if(!c)return;
+  document.querySelectorAll('.lsel').forEach(x=>x.checked=c.ids.includes(x.value));
+  document.querySelectorAll('details[data-topic]').forEach(det=>{syncTopic(det);det.open=!!det.querySelector('.lsel:checked')});
+  $('marks').value=c.nums[0];$('seed').value=c.seed;$('topics').dispatchEvent(new Event('change',{bubbles:true}))}
+ function generate(){applyCode();
   const ids=selected();const seed=$('seed').value.trim()||newSeed();$('seed').value=seed;
   const target=Math.max(6,Math.min(30,+$('marks').value||20));$('marks').value=target;
   if(!ids.length){$('out').innerHTML='<div class="empty">Tick at least one lesson, then press Generate.</div>';$('meta').textContent='';$('tabs').hidden=true;$('pdfQ').disabled=$('pdfA').disabled=true;return}
@@ -268,7 +275,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   [['c','cls'],['w','week'],['d','due']].forEach(([k,id])=>{if($(id).value.trim())p.set(k,$(id).value.trim())});
   if($('title').value.trim()&&$('title').value.trim()!=='Homework')p.set('ti',$('title').value.trim());history.replaceState(null,'','#'+p);
   let set;try{set=buildSheet(ids,target,seed)}catch(e){$('out').innerHTML=`<div class="empty">Generator error: ${esc(e.message)}</div>`;return}
-  const info={title:$('title').value.trim()||'Homework',cls:$('cls').value.trim(),week:$('week').value.trim(),due:$('due').value};
+  const info={code:sheetCode(seed,[target],ids),title:$('title').value.trim()||'Homework',cls:$('cls').value.trim(),week:$('week').value.trim(),due:$('due').value};
   const refresh=()=>{info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=[...new Set(set.map(Q=>Q.lesson.topic.name))].join(' · ')};
   refresh();
   // keep to the two sides: drop the smallest part (the latest of equal ones) until it fits
@@ -282,7 +289,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   render($('out'));render($('ans'));
   const short=info.total<target?` (${target} asked: the closest fit on two sides)`:'';
   const mix=[3,2,1].map(m=>[m,set.filter(Q=>Q.marks===m).length]).filter(x=>x[1]).map(([m,n])=>`${n}×${m}`).join(' + ');
-  $('meta').textContent=`${set.length} parts (${mix}) · ${info.total} marks${short} · about ${suggested(info.total)} minutes · seed ${seed}`;
+  $('meta').textContent=`${set.length} parts (${mix}) · ${info.total} marks${short} · about ${suggested(info.total)} minutes · sheet code ${info.code}`;
   $('tabs').hidden=false;show('q');$('pdfQ').disabled=$('pdfA').disabled=false;current={info,seed};
  }
 

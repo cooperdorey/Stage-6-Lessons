@@ -81,6 +81,7 @@ main{min-width:0}
 .pq .mk{font-family:var(--ui);font-size:11.5px;color:#333;text-align:right;padding-top:3px;white-space:nowrap}
 .pq .space{grid-column:1/-1}
 .pfoot{position:absolute;left:60px;right:60px;bottom:22px;display:flex;justify-content:space-between;font-family:var(--ui);font-size:10.5px;color:#666}
+.pfoot .code{position:absolute;left:50%;transform:translateX(-50%);bottom:-12px;font-size:8px;letter-spacing:.04em;color:#b4b8be;white-space:nowrap}
 .akey .pq{grid-template-columns:30px minmax(0,1fr) 62px;padding-bottom:8px}
 .akey .steps{font-size:14px;color:#14532D}
 .akey .steps>div{margin:2px 0}
@@ -109,8 +110,9 @@ main{min-width:0}
    <div><label for="mins">Time (minutes)</label><input id="mins" type="number" min="5" max="60" value="20"></div>
    <div><label for="marks">Marks</label><input id="marks" type="number" min="3" max="40"></div>
    <div class="full hint">Marks follow the time at about a mark a minute. Change either one.</div>
-   <div class="full"><label for="seed">Seed</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New quiz" aria-label="New quiz">🎲</button></div></div>
+   <div class="full"><label for="seed">Seed or sheet code</label><div class="seedrow"><input id="seed" type="text"><button id="dice" type="button" title="New quiz" aria-label="New quiz">🎲</button></div></div>
   </div>
+  <div class="hint">To find the answers to a printed quiz, type the faint code at the bottom of its page here and press Generate.</div>
   <button class="primary" id="go">Generate</button>
   <div class="btnrow">
    <button id="pdfQ" disabled>Download quiz PDF</button>
@@ -217,7 +219,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const inl=s=>String(s).replace(/\$\$([\s\S]+?)\$\$/g,(m,x)=>`<div>$\\displaystyle ${x}$</div>`);
  const qHTML=(Q,i,space)=>`<div class="pq"><div class="n">${i+1}</div><div class="p">${inl(Q.q).replace(/\\frac/g,'\\dfrac')}</div><div class="mk">${Q.marks} mark${Q.marks>1?'s':''}</div>${space==null?'':`<div class="space" style="height:${space}px"></div>`}</div>`;
  const aHTML=(Q,i)=>`<div class="pq"><div class="n">${i+1}</div><div class="steps">${Q.sol.map(s=>`<div>${inl(s)}</div>`).join('')}<div class="final">Answer: ${inl(Q.ans)}</div></div><div class="mk">${Q.marks} mark${Q.marks>1?'s':''}</div></div>`;
- const foot=(info,p,n,label)=>`<div class="pfoot"><span>${esc(info.title)}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span><span>Page ${p} of ${n}</span></div>`;
+ const foot=(info,p,n,label)=>`<div class="pfoot"><span>${esc(info.title)}${info.cls?' · '+esc(info.cls):''}${label?' · '+label:''}</span>${info.code?`<span class="code">${esc(info.code)}</span>`:''}<span>Page ${p} of ${n}</span></div>`;
 
  // measure each block at page width
  function measure(htmls,headHtml){const m=$('measure');
@@ -249,7 +251,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   hs.forEach((h,i)=>{if(cur.length&&used+h>avail){pages.push(cur);cur=[];used=0}cur.push(i);used+=h+4});if(cur.length)pages.push(cur);return pages}
 
  let current=null;
- function generate(){
+ // a sheet code from a printed sheet (seed.mins.marks.lessons) rebuilds that exact sheet
+ function applyCode(){const v=$('seed').value.trim();if(!v.includes('.'))return;const c=readSheetCode(v,2);if(!c)return;
+  document.querySelectorAll('.lsel').forEach(x=>x.checked=c.ids.includes(x.value));
+  document.querySelectorAll('details[data-topic]').forEach(det=>{syncTopic(det);det.open=!!det.querySelector('.lsel:checked')});
+  $('mins').value=c.nums[0];$('marks').value=c.nums[1];$('seed').value=c.seed;$('topics').dispatchEvent(new Event('change',{bubbles:true}))}
+ function generate(){applyCode();
   const ids=selected();const seed=$('seed').value.trim()||newSeed();$('seed').value=seed;
   const mins=Math.max(5,Math.min(60,+$('mins').value||20)),target=Math.max(3,Math.min(40,+$('marks').value||Math.round(mins/MIN_PER_MARK)));
   if(!ids.length){$('out').innerHTML='<div class="empty">Tick at least one lesson, then press Generate.</div>';$('meta').textContent='';$('tabs').hidden=true;$('pdfQ').disabled=$('pdfA').disabled=true;return}
@@ -257,7 +264,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if($('title').value.trim()&&$('title').value.trim()!=='Low Stakes Quiz')p.set('ti',$('title').value.trim());history.replaceState(null,'','#'+p);
   let set;try{set=buildQuiz(ids,target,seed)}catch(e){$('out').innerHTML=`<div class="empty">Generator error: ${esc(e.message)}</div>`;return}
   const topicNames=()=>[...new Set(set.map(Q=>Q.lesson.topic.name))].join(' · ');
-  const info={title:$('title').value.trim()||'Low Stakes Quiz',cls:$('cls').value.trim(),date:$('date').value,mins};
+  const info={code:sheetCode(seed,[mins,target],ids),title:$('title').value.trim()||'Low Stakes Quiz',cls:$('cls').value.trim(),date:$('date').value,mins};
   info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=topicNames();
   let {pages,set:fit}=quizPages(set,info);
   if(fit.length<set.length){set=fit;info.total=set.reduce((s,Q)=>s+Q.marks,0);info.topics=topicNames();({pages,set:fit}=quizPages(set,info))}
@@ -267,7 +274,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('ans').innerHTML=`<div class="pages">${ap.map((pg,pi)=>`<div class="pagebox"><div class="page apage akey"><div class="phead"><div><h2>${esc(info.title)}: answers</h2><div class="sub">${esc(info.topics)}</div></div><div class="right">${info.cls?esc(info.cls)+'<br>':''}${esc(fmtDate(info.date))}<br>Total: ${info.total} marks</div></div>${pg.map(i=>aHTML(set[i],i)).join('')}${foot(info,pi+1,ap.length,'Answers')}</div></div>`).join('')}</div>`;
   render($('out'));render($('ans'));
   const short=info.total<target?` (${target} asked: the closest fit on two pages)`:'';
-  $('meta').textContent=`${set.length} questions · ${info.total} marks${short} · ${mins} minutes · ${n} page${n>1?'s':''} · seed ${seed}`;
+  $('meta').textContent=`${set.length} questions · ${info.total} marks${short} · ${mins} minutes · ${n} page${n>1?'s':''} · sheet code ${info.code}`;
   $('tabs').hidden=false;show('q');$('pdfQ').disabled=$('pdfA').disabled=false;current={info,seed};
  }
 
